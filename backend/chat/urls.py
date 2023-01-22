@@ -3,6 +3,6 @@ from . import views
 
 
 urlpatterns = [
-    path("", views.index, name="index"),
-    path("<str:room_name>/", views.room, name="room"),
+    path("room", views.index, name="index"),
+    path("join/<str:id>/", views.room, name="room"),
 ]

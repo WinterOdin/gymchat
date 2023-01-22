@@ -6,12 +6,14 @@ from .models import Message
 from django.core import serializers
 from django.contrib.auth import get_user_model
 #async_to_sync in development 
+from django.shortcuts import get_object_or_404
+User = get_user_model()
 
 class ChatConsumer(WebsocketConsumer):
 
     def fetch_messages(self, data):
         # Get last 10 messages
-        messages = Messages.last_messages()
+        messages = Message.last_messages()
         content = {
             "messages": self.serialize_query(messages)
         }
@@ -24,11 +26,21 @@ class ChatConsumer(WebsocketConsumer):
 
 
     def new_message(self, data):
-        pass
+        from_who = data['from_id']
+        user = get_object_or_404(User, pk=from_who)
+        new_message_content = Message.objects.create(
+            author = user.author,
+            content = data["message"]
+        )
+        content = {
+            "command": "new_message",
+            "message": self.serialize_query(new_message_content)
+        }
+        return self.send_chat_message(content)
 
     commands = {
-        fetch_messages: fetch_messages,
-        new_message: new_message
+        "fetch_messages": fetch_messages,
+        "new_message": new_message
     }
 
 
@@ -49,7 +61,8 @@ class ChatConsumer(WebsocketConsumer):
     # Receive message from WebSocket
     def receive(self, text_data):
         text_data_json = json.loads(text_data)
-        self.commands[data['command']](self, text_data_json)
+    
+        self.commands[text_data_json['command']](self, text_data_json)
 
 
     def send_chat_message(self, message):
@@ -67,5 +80,9 @@ class ChatConsumer(WebsocketConsumer):
         message = event["message"]
 
         # Send message to WebSocket
-        # Chek if needs to be obj {"message": message }
-        async_to_sync(self.send(text_data=json.dumps(message)))
+    
+        async_to_sync(self.send(text_data=json.dumps(
+            {
+                "message": message
+            }
+        )))
