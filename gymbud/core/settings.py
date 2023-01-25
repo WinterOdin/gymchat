@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'chat',
-    'django_extensions'
+    'django_extensions',
+    'user_mgmt'
 
 ]
 
@@ -83,6 +84,10 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000'
+]
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
@@ -124,24 +129,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.1/howto/static-files/
-
-# # Collect static files here
-# STATIC_ROOT = join(BASE_DIR, 'frontend', 'static_root')
-
-# # Collect media files here
-# MEDIA_ROOT = join(BASE_DIR, 'run', 'media_root')
-# MEDIA_URL = '/media/'
-
-# # look for static assets here
-# STATICFILES_DIRS = [
-#     join(BASE_DIR, 'example', 'static'),
-# ]
-
-
-
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/staticRoot')
 STATIC_URL = 'static/'
 MEDIA_URL = 'images/'
@@ -164,24 +151,24 @@ ALLOWED_HOSTS = ['*']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'django.db.backends': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-        }
-    },
-    # Uncomment this to view django_private_chat2's logs
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django.db.backends': {
+#             'level': 'DEBUG',
+#             'handlers': ['console'],
+#         }
+#     },
+#     # Uncomment this to view django_private_chat2's logs
 
-    # 'root': {
-    #     'handlers': ['console'],
-    #     'level': 'INFO',
-    # },
-}
+#     # 'root': {
+#     #     'handlers': ['console'],
+#     #     'level': 'INFO',
+#     # },
+# }

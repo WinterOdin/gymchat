@@ -2,8 +2,7 @@ import json
 from typing import Optional, Dict, Tuple
 
 from channels.generic.websocket import AsyncWebsocketConsumer
-from django.contrib.auth.models import AbstractBaseUser
-
+from user_mgmt.models import Profile
 from .db_operations import get_groups_to_add, get_unread_count, get_user_by_pk, get_file_by_id, get_message_by_id, \
     save_file_message, save_text_message, mark_message_as_read
 from .message_types import MessageTypes, MessageTypeMessageRead, MessageTypeFileMessage, MessageTypeTextMessage, \
@@ -36,7 +35,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # 3. Add the user to all groups where he has dialogs
         # Call self.scope["session"].save() on any changes to User
         if self.scope["user"].is_authenticated:
-            self.user: AbstractBaseUser = self.scope['user']
+            self.user: Profile = self.scope['user']
             self.group_name: str = str(self.user.pk)
             self.sender_username: str = self.user.get_username()
             logger.info(f"User {self.user.pk} connected, adding {self.channel_name} to {self.group_name}")
@@ -111,7 +110,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     await self.channel_layer.group_send(user_pk,
                                                         OutgoingEventMessageRead(message_id=mid, sender=user_pk,
                                                                                  receiver=self.group_name)._asdict())
-                    recipient: Optional[AbstractBaseUser] = await get_user_by_pk(user_pk)
+                    recipient: Optional[Profile] = await get_user_by_pk(user_pk)
                     logger.info(f"DB check if user {user_pk} exists resulted in {recipient}")
                     if not recipient:
                         return ErrorTypes.InvalidUserPk, f"User with pk {user_pk} does not exist"
@@ -159,7 +158,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                     if not file:
                         return ErrorTypes.FileDoesNotExist, f"File with id {file_id} does not exist"
                     else:
-                        recipient: Optional[AbstractBaseUser] = await get_user_by_pk(user_pk)
+                        recipient: Optional[Profile] = await get_user_by_pk(user_pk)
                         logger.info(f"DB check if user {user_pk} exists resulted in {recipient}")
                         if not recipient:
                             return ErrorTypes.InvalidUserPk, f"User with pk {user_pk} does not exist"
@@ -213,7 +212,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                                                                                              sender=self.group_name,
                                                                                              receiver=user_pk,
                                                                                              sender_username=self.sender_username)._asdict())
-                    recipient: Optional[AbstractBaseUser] = await get_user_by_pk(user_pk)
+                    recipient: Optional[Profile] = await get_user_by_pk(user_pk)
                     logger.info(f"DB check if user {user_pk} exists resulted in {recipient}")
                     if not recipient:
                         return ErrorTypes.InvalidUserPk, f"User with pk {user_pk} does not exist"

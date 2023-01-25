@@ -1,5 +1,6 @@
-from .models import MessageModel, DialogsModel, UserModel, UploadedFile
+from .models import MessageModel, DialogsModel, Profile, UploadedFile
 from typing import Optional, Dict
+from user_mgmt.models import Profile
 import os
 
 
@@ -29,10 +30,10 @@ def serialize_message_model(m: MessageModel, user_id):
 
 
 def serialize_dialog_model(m: DialogsModel, user_id):
-    username_field = UserModel.USERNAME_FIELD
-    other_user_pk, other_user_username = UserModel.objects.filter(pk=m.user1.pk).values_list('pk',
+    username_field = Profile.USERNAME_FIELD
+    other_user_pk, other_user_username = Profile.objects.filter(pk=m.user1.pk).values_list('pk',
                                                                                              username_field).first() \
-        if m.user2.pk == user_id else UserModel.objects.filter(pk=m.user2.pk).values_list('pk', username_field).first()
+        if m.user2.pk == user_id else Profile.objects.filter(pk=m.user2.pk).values_list('pk', username_field).first()
     unread_count = MessageModel.get_unread_count_for_dialog_with_user(sender=other_user_pk, recipient=user_id)
     last_message: Optional[MessageModel] = MessageModel.get_last_message_for_dialog(sender=other_user_pk,
                                                                                     recipient=user_id)

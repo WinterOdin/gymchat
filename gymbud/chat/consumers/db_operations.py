@@ -1,25 +1,25 @@
 from channels.db import database_sync_to_async
-from chat.models import MessageModel, DialogsModel, UserModel, UploadedFile
+from chat.models import MessageModel, DialogsModel, UploadedFile
+from user_mgmt.models import Profile
 from typing import Set, Awaitable, Optional, Tuple
-from django.contrib.auth.models import AbstractBaseUser
 from django.core.exceptions import ValidationError
 
 
 @database_sync_to_async
-def get_groups_to_add(u: AbstractBaseUser) -> Awaitable[Set[int]]:
+def get_groups_to_add(u: Profile) -> Awaitable[Set[int]]:
     l = DialogsModel.get_dialogs_for_user(u)
     return set(list(sum(l, ())))
-
+    
 
 @database_sync_to_async
-def get_user_by_pk(pk: str) -> Awaitable[Optional[AbstractBaseUser]]:
-    return UserModel.objects.filter(pk=pk).first()
+def get_user_by_pk(pk: str) -> Awaitable[Optional[Profile]]:
+    return Profile.objects.filter(pk=pk).first()
 
 
 @database_sync_to_async
 def get_file_by_id(file_id: str) -> Awaitable[Optional[UploadedFile]]:
     try:
-        f = UploadedFile.objects.filter(id=file_id).first()
+        f = Profile.objects.filter(id=file_id).first()
     except ValidationError:
         f = None
     return f
@@ -49,10 +49,10 @@ def get_unread_count(sender, recipient) -> Awaitable[int]:
 
 
 @database_sync_to_async
-def save_text_message(text: str, from_: AbstractBaseUser, to: AbstractBaseUser) -> Awaitable[MessageModel]:
+def save_text_message(text: str, from_: Profile, to: Profile) -> Awaitable[MessageModel]:
     return MessageModel.objects.create(text=text, sender=from_, recipient=to)
 
 
 @database_sync_to_async
-def save_file_message(file: UploadedFile, from_: AbstractBaseUser, to: AbstractBaseUser) -> Awaitable[MessageModel]:
+def save_file_message(file: UploadedFile, from_: Profile, to: Profile) -> Awaitable[MessageModel]:
     return MessageModel.objects.create(file=file, sender=from_, recipient=to)

@@ -84,6 +84,7 @@ class SelfInfoView(LoginRequiredMixin, DetailView):
 
     def render_to_response(self, context, **response_kwargs):
         user: AbstractBaseUser = context['object']
+        
         data = {
             "username": user.get_username(),
             "pk": str(user.pk)
