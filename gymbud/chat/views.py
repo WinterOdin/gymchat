@@ -12,6 +12,7 @@ from .models import (
     DialogsModel,
     UploadedFile
 )
+from chat.models import Profile
 from .serializers import serialize_message_model, serialize_dialog_model, serialize_file_model
 from django.db.models import Q
 
@@ -29,16 +30,20 @@ import json
 class MessagesModelList(LoginRequiredMixin, ListView):
     http_method_names = ['get', ]
     paginate_by = getattr(settings, 'MESSAGES_PAGINATION', 500)
-
+    
     def get_queryset(self):
+
+        instance = Profile.objects.get(user=self.request.user)
+
         if self.kwargs.get('dialog_with'):
+            
             qs = MessageModel.objects \
-                .filter(Q(recipient=self.request.user, sender=self.kwargs['dialog_with']) |
-                        Q(sender=self.request.user, recipient=self.kwargs['dialog_with'])) \
+                .filter(Q(recipient=instance, sender=self.kwargs['dialog_with']) |
+                        Q(sender=instance, recipient=self.kwargs['dialog_with'])) \
                 .select_related('sender', 'recipient')
         else:
-            qs = MessageModel.objects.filter(Q(recipient=self.request.user) |
-                                             Q(sender=self.request.user)).prefetch_related('sender', 'recipient', 'file')
+            qs = MessageModel.objects.filter(Q(recipient=instance) |
+                                             Q(sender=instance)).prefetch_related('sender', 'recipient', 'file')
 
         return qs.order_by('-created')
 

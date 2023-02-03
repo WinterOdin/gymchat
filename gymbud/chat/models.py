@@ -57,7 +57,8 @@ class DialogsModel(TimeStampedModel):
 
     @staticmethod
     def get_dialogs_for_user(user: Profile):
-        return DialogsModel.objects.filter(Q(user1=user) | Q(user2=user)).values_list('user1__pk', 'user2__pk')
+        instance = Profile.objects.filter(user=user).get()
+        return DialogsModel.objects.filter(Q(user1=instance) | Q(user2=instance)).values_list('user1__pk', 'user2__pk')
 
 
 class MessageModel(TimeStampedModel, SoftDeletableModel):
