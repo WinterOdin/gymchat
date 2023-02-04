@@ -7,12 +7,20 @@ from django.core.exceptions import ValidationError
 
 @database_sync_to_async
 def get_groups_to_add(u: Profile) -> Awaitable[Set[int]]:
+    print("-!!!!-")
+    print(u)
+    print(DialogsModel.get_dialogs_for_user(u))
+    print("-!!!!-")
+
     l = DialogsModel.get_dialogs_for_user(u)
     return set(list(sum(l, ())))
     
 
 @database_sync_to_async
 def get_user_by_pk(pk: str) -> Awaitable[Optional[Profile]]:
+    print("####")
+    print(Profile.objects.filter(pk=pk).first())
+    print("####")
     return Profile.objects.filter(pk=pk).first()
 
 
@@ -27,6 +35,10 @@ def get_file_by_id(file_id: str) -> Awaitable[Optional[UploadedFile]]:
 
 @database_sync_to_async
 def get_message_by_id(mid: int) -> Awaitable[Optional[Tuple[str, str]]]:
+    print("$$$$$")
+    print(MessageModel.objects.filter(id=mid).first())
+    print(mid)
+    print("$$$$$")
     msg: Optional[MessageModel] = MessageModel.objects.filter(id=mid).first()
     if msg:
         return str(msg.recipient.pk), str(msg.sender.pk)
@@ -40,17 +52,25 @@ def get_message_by_id(mid: int) -> Awaitable[Optional[Tuple[str, str]]]:
 
 @database_sync_to_async
 def mark_message_as_read(mid: int) -> Awaitable[None]:
+    print("aaaaa")
+    print(MessageModel.objects.filter(id=mid).get())
+    print("aaaaa")
     return MessageModel.objects.filter(id=mid).update(read=True)
 
 
 @database_sync_to_async
 def get_unread_count(sender, recipient) -> Awaitable[int]:
+    print("!!!!!")
+    print(sender)
+    print(recipient)
+    print("!!!!!")
     return int(MessageModel.get_unread_count_for_dialog_with_user(sender, recipient))
 
 
 @database_sync_to_async
 def save_text_message(text: str, from_: Profile, to: Profile) -> Awaitable[MessageModel]:
-    return MessageModel.objects.create(text=text, sender=from_, recipient=to)
+
+    return MessageModel.objects.create(text=text, sender=Profile.objects.get(user=from_), recipient=to)
 
 
 @database_sync_to_async

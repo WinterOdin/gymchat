@@ -33,7 +33,7 @@ class Profile(models.Model):
     playlist        = models.CharField(max_length=25, null=True)
     instagram       = models.CharField(max_length=25, null=True)
     dateCreated     = models.DateTimeField(auto_now_add=True)
-    
+
     def __str__(self):
         return str(self.id)
 

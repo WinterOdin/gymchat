@@ -34,6 +34,7 @@ class MessagesModelList(LoginRequiredMixin, ListView):
     def get_queryset(self):
 
         instance = Profile.objects.get(user=self.request.user)
+        
 
         if self.kwargs.get('dialog_with'):
             
