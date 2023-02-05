@@ -36,8 +36,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Call self.scope["session"].save() on any changes to User
         if self.scope["user"].is_authenticated:
             self.user: Profile = self.scope['user']
+            print("***********")
+            print(self.scope['user'])
             self.group_name: str = str(self.user.pk)
-            self.sender_username: str = self.user.get_username()
+            self.sender_username: str = self.user.get_short_name()
             logger.info(f"User {self.user.pk} connected, adding {self.channel_name} to {self.group_name}")
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             await self.accept()

@@ -7,10 +7,6 @@ from django.core.exceptions import ValidationError
 
 @database_sync_to_async
 def get_groups_to_add(u: Profile) -> Awaitable[Set[int]]:
-    print("-!!!!-")
-    print(u)
-    print(DialogsModel.get_dialogs_for_user(u))
-    print("-!!!!-")
 
     l = DialogsModel.get_dialogs_for_user(u)
     return set(list(sum(l, ())))
@@ -18,9 +14,6 @@ def get_groups_to_add(u: Profile) -> Awaitable[Set[int]]:
 
 @database_sync_to_async
 def get_user_by_pk(pk: str) -> Awaitable[Optional[Profile]]:
-    print("####")
-    print(Profile.objects.filter(pk=pk).first())
-    print("####")
     return Profile.objects.filter(pk=pk).first()
 
 
@@ -35,10 +28,7 @@ def get_file_by_id(file_id: str) -> Awaitable[Optional[UploadedFile]]:
 
 @database_sync_to_async
 def get_message_by_id(mid: int) -> Awaitable[Optional[Tuple[str, str]]]:
-    print("$$$$$")
-    print(MessageModel.objects.filter(id=mid).first())
-    print(mid)
-    print("$$$$$")
+
     msg: Optional[MessageModel] = MessageModel.objects.filter(id=mid).first()
     if msg:
         return str(msg.recipient.pk), str(msg.sender.pk)

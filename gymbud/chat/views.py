@@ -92,7 +92,7 @@ class SelfInfoView(LoginRequiredMixin, DetailView):
         user: AbstractBaseUser = context['object']
         
         data = {
-            "username": user.get_username(),
+            "username": user.get_short_name(),
             "pk": str(user.pk)
         }
         return JsonResponse(data, **response_kwargs)
