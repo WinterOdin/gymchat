@@ -39,7 +39,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             print("***********")
             print(self.scope['user'])
             self.group_name: str = str(self.user.pk)
-            self.sender_username: str = self.user.get_short_name()
+            self.sender_username: str = self.user.user_name
             logger.info(f"User {self.user.pk} connected, adding {self.channel_name} to {self.group_name}")
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             await self.accept()

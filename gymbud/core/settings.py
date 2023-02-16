@@ -91,7 +91,9 @@ CHANNEL_LAYERS = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'http://127.0.0.1:8000'
+
 ]
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
@@ -123,11 +125,9 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
-
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
-
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
@@ -135,17 +135,18 @@ REST_FRAMEWORK = {
 }
 
 
-AUTH_USER_MODEL = 'auth.User'
+AUTH_USER_MODEL = 'user_mgmt.User'
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+    #change for prod
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=15),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
     'VERIFYING_KEY': None,
-    'AUTH_HEADER_TYPES': ('JWT',),
+    'AUTH_HEADER_TYPES': ('JWT','Bearer'),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
@@ -175,8 +176,6 @@ MEDIA_ROOT =os.path.join(BASE_DIR, "static/images")
 STATIC_URL = '/static/'
 ADMIN_MEDIA_PREFIX = '/static/admin/'
 
-LOGIN_REDIRECT_URL = '/admin'
-LOGIN_URL = '/admin/login/'
 ALLOWED_HOSTS = ['*']
 
 # Default primary key field type

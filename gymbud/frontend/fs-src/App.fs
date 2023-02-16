@@ -200,7 +200,7 @@ let sendOutgoingTextMessage (sock: WebSocket) (text: string) (user_pk: string) (
         "random_id", Encode.int (int32 randomId)
     ]
     sock.send (msgTypeEncoder MessageTypes.TextMessage data)
-    self_info |> Option.map (fun x -> createMessageBoxFromOutgoingMessage text user_pk x.pk x.username randomId None)
+    self_info |> Option.map (fun x -> createMessageBoxFromOutgoingMessage text user_pk x.pk x.sender_username randomId None)
 
 let sendOutgoingFileMessage (sock: WebSocket) (user_pk: string) (file_data: MessageModelFile) (self_info: UserInfoResponse option) =
     printfn "Sending file message: '%s', user_pk:'%s'" file_data.id user_pk
@@ -211,7 +211,7 @@ let sendOutgoingFileMessage (sock: WebSocket) (user_pk: string) (file_data: Mess
         "random_id", Encode.int (int32 randomId)
     ]
     sock.send (msgTypeEncoder MessageTypes.FileMessage data)
-    self_info |> Option.map (fun x -> createMessageBoxFromOutgoingMessage file_data.name user_pk x.pk x.username randomId (Some file_data))
+    self_info |> Option.map (fun x -> createMessageBoxFromOutgoingMessage file_data.name user_pk x.pk x.sender_username randomId (Some file_data))
 
 let sendIsTypingMessage (sock: WebSocket) =
     sock.send (msgTypeEncoder MessageTypes.IsTyping [])
@@ -225,12 +225,12 @@ let sendMessageReadMessage (sock: WebSocket) (user_pk: string) (message_id: int6
     sock.send (msgTypeEncoder MessageTypes.MessageRead data)
 
 let backendUrl = "http://127.0.0.1:8000"
-let messagesEndpoint = sprintf "%s/messages/" backendUrl
-let dialogsEndpoint = sprintf "%s/dialogs/" backendUrl
-let selfEndpoint = sprintf "%s/self/" backendUrl
-let usersEndpoint = sprintf "%s/users/" backendUrl
+let messagesEndpoint = sprintf "%s/com/messages/" backendUrl
+let dialogsEndpoint = sprintf "%s/com/dialogs/" backendUrl
+let selfEndpoint = sprintf "%s/com/self/" backendUrl
+let usersEndpoint = sprintf "%s/com/users/" backendUrl
 
-let uploadEndpoint = sprintf "%s/upload/" backendUrl
+let uploadEndpoint = sprintf "%s/com/upload/" backendUrl
 
 
 let uploadFile (f: FileList) (csrfToken: string) =
@@ -286,8 +286,8 @@ let fetchUsersList(existing: ChatItem array) =
             avatarFlexible = true
             statusColor = ""
             statusColorType = None
-            alt = dialog.username
-            title = dialog.username
+            alt = dialog.sender_username
+            title = dialog.sender_username
             date = DateTimeOffset.Now
             subtitle = ""
             unread = 0
@@ -375,8 +375,8 @@ let fetchDialogs() =
                 avatarFlexible = true
                 statusColor = ""
                 statusColorType = None
-                alt = dialog.username
-                title = dialog.username
+                alt = dialog.sender_username
+                title = dialog.sender_username
                 date = dialog.last_message |> Option.map (fun x -> x.sent) |> Option.defaultValue dialog.created
                 subtitle = getSubtitleTextFromMessageModel dialog.last_message
                 unread = dialog.unread_count

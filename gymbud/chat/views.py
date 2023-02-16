@@ -26,8 +26,11 @@ from django.urls import reverse_lazy
 from django.forms import ModelForm
 import json
 
+from rest_framework import permissions
 
 class MessagesModelList(LoginRequiredMixin, ListView):
+
+    permission_classes = [permissions.IsAuthenticated,]
     http_method_names = ['get', ]
     paginate_by = getattr(settings, 'MESSAGES_PAGINATION', 500)
     
