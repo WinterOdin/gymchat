@@ -53,13 +53,73 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
-class UserPhotos(models.Model):
+class UserPhoto(models.Model):
     id      = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user    = models.ForeignKey(User, on_delete=models.CASCADE)
     order   = models.PositiveIntegerField(null=True)
     url     = models.CharField(max_length=220)
 
     def __str__(self):
         return str(f"{self.url}")
+
+class UserSwipe(models.Model):
+    SwipeChoices = (
+        ("like", "like"),
+        ("dislike", "dislike"),
+    )
+
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user        = models.ForeignKey(User, on_delete=models.CASCADE)
+    swiped_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    date        = models.DateTimeField(auto_now_add=True)
+    swipe       = models.CharField(max_length=20, default="like", choices=(SwipeChoices)
+
+    def __str__(self):
+        return str(f"{self.user} swiped {self.swiped_user} on {self.date}")
+    
+class Matches(models.Model):
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user        = models.ForeignKey(User, on_delete=models.CASCADE)
+    matched_user= models.ForeignKey(User, on_delete=models.CASCADE)
+    date        = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(f"{self.user} matched with {self.matched_user} on {self.date}")
+    
+class NotMatches(models.Model):
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user        = models.ForeignKey(User, on_delete=models.CASCADE)
+    not_matched_user= models.ForeignKey(User, on_delete=models.CASCADE)
+    date        = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(f"{self.user} not matched with {self.not_matched_user} on {self.date}")
+    
+class FavoriteExercises(models.Model):
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user        = models.ForeignKey(User, on_delete=models.CASCADE)
+    exercise    = models.CharField(max_length=12)
+    date        = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(f"{self.user} favorited {self.exercise} on {self.date}")
+    
+class SocialLinks(models.Model):
+    
+    SocialLinksType = [
+        ("1", "Facebook"),
+        ("2", "Instagram"),
+        ("3", "Twitter")
+    ]
+
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user        = models.ForeignKey(User, on_delete=models.CASCADE)
+    type        = models.CharField(max_length=12, null=True, choices=SocialLinksType)
+    link        = models.CharField(max_length=100)
+    date        = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(f"{self.user} favorited {self.exercise} on {self.date}")
 
 #for now we are extening base user model in next step we need to connect with 
 #auth 
@@ -80,18 +140,12 @@ class Profile(models.Model):
     id              = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user            = models.OneToOneField(User, on_delete=models.CASCADE)
     gym             = models.ForeignKey(Gym, on_delete=models.CASCADE)
-    matched         = models.ManyToManyField("self", related_name="liked", blank=True)
-    blocked_by      = models.ManyToManyField("self", related_name="blocked", blank=True)
-    fav_exercise    = models.CharField(max_length=12, null=True, choices=EXERCISES)
     gender          = models.CharField(max_length=10, null=True, choices=GENDER)
     bio             = models.TextField(null=True)
     place           = models.ForeignKey(Places, on_delete=models.CASCADE)
-    swipes_left     = models.PositiveIntegerField(null=True)
-    swipes_right    = models.PositiveIntegerField(null=True)
     playlist        = models.CharField(max_length=25, null=True)
-    instagram       = models.CharField(max_length=25, null=True)
     dateCreated     = models.DateTimeField(auto_now_add=True)
-    photos          = models.ForeignKey(UserPhotos, on_delete=models.CASCADE)
+    dateUpdated     = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.user.email)
