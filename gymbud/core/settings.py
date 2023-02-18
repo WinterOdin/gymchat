@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'chat',
     'django_extensions',
     'user_mgmt',
+    'locations',
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders', 

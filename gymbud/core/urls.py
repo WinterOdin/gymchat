@@ -18,6 +18,6 @@ urlpatterns = [
     
     path('com/', include('chat.urls', namespace='chat')),
     path('chat/', TemplateView.as_view(template_name='base.html'), name='home'),
-
+    path('locations/', include('locations.urls')),
     path('auth/', include('user_mgmt.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

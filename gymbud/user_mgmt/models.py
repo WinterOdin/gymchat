@@ -3,10 +3,12 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from locations.models import Places, Gym
+
 
 class CustomAccountManager(BaseUserManager):
 
-    def create_superuser(self, email, user_name, first_name, password, **other_fields):
+    def create_superuser(self, email, first_name, password, **other_fields):
 
         other_fields.setdefault('is_staff', True)
         other_fields.setdefault('is_superuser', True)
@@ -19,16 +21,15 @@ class CustomAccountManager(BaseUserManager):
             raise ValueError(
                 'Superuser must be assigned to is_superuser=True.')
 
-        return self.create_user(email, user_name, first_name, password, **other_fields)
+        return self.create_user(email, first_name, password, **other_fields)
 
-    def create_user(self, email, user_name, first_name, password, **other_fields):
+    def create_user(self, email, first_name, password, **other_fields):
 
         if not email:
             raise ValueError(_('You must provide an email address'))
 
         email = self.normalize_email(email)
-        user = self.model(email=email, user_name=user_name,
-                          first_name=first_name, **other_fields)
+        user = self.model(email=email, first_name=first_name, **other_fields)
         user.set_password(password)
         user.save()
         return user
@@ -50,31 +51,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
-
-
-class Places(models.Model):
-    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    city        = models.CharField(max_length=20)
-    street      = models.CharField(max_length=20)
-    state       = models.CharField(max_length=20)
-    country     = models.CharField(max_length=20)
-    placeId     = models.CharField(max_length=100)
-    latitude    = models.FloatField(blank=True, null=True)
-    longitude   = models.FloatField(blank=True, null=True)
-    dateCreated = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return str(f"{self.city} {self.street}")
-
-
-class Gym(models.Model):
-    id      = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name    = models.CharField(max_length=20)
-    place   = models.ForeignKey(Places, on_delete=models.CASCADE)
-    dateCreated = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return str(f"{self.name}")
 
 
 class UserPhotos(models.Model):
@@ -104,8 +80,8 @@ class Profile(models.Model):
     id              = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user            = models.OneToOneField(User, on_delete=models.CASCADE)
     gym             = models.ForeignKey(Gym, on_delete=models.CASCADE)
-    matched         = models.ManyToManyField(User, related_name="likes", blank=True)
-    blocked_by      = models.ManyToManyField(User, related_name="blocked", blank=True)
+    matched         = models.ManyToManyField("self", related_name="liked", blank=True)
+    blocked_by      = models.ManyToManyField("self", related_name="blocked", blank=True)
     fav_exercise    = models.CharField(max_length=12, null=True, choices=EXERCISES)
     gender          = models.CharField(max_length=10, null=True, choices=GENDER)
     bio             = models.TextField(null=True)
