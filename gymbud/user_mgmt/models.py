@@ -72,7 +72,7 @@ class UserSwipe(models.Model):
     user        = models.ForeignKey(User, on_delete=models.CASCADE)
     swiped_user = models.ForeignKey(User, on_delete=models.CASCADE)
     date        = models.DateTimeField(auto_now_add=True)
-    swipe       = models.CharField(max_length=20, default="like", choices=(SwipeChoices)
+    swipe       = models.CharField(max_length=20, default="like", choices=(SwipeChoices))
 
     def __str__(self):
         return str(f"{self.user} swiped {self.swiped_user} on {self.date}")
