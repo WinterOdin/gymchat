@@ -6,7 +6,12 @@ from .models import *
 admin.site.register(Profile)
 admin.site.register(Gym)
 admin.site.register(Places)
-admin.site.register(UserPhotos)
+admin.site.register(UserPhoto)
+admin.site.register(UserSwipe)
+admin.site.register(Matches)
+admin.site.register(NotMatches)
+admin.site.register(FavoriteExercises)
+admin.site.register(SocialLinks)
 
 from django.contrib import admin
 from .models import User
