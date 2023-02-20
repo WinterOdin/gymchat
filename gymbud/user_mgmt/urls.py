@@ -5,11 +5,12 @@ from rest_framework_simplejwt.views import (
 )
 
 from rest_framework.routers import DefaultRouter
-from .views import ProfileViewset, CustomUserCreate, BlacklistTokenView
+from .views import ProfileViewSet, CustomUserCreate, BlacklistTokenView,MatchesViewSet, SwipeApi
 
 
 router = DefaultRouter()
-router.register('profile', ProfileViewset, basename="profile")
+router.register('profile', ProfileViewSet, basename="profile")
+router.register('matches', MatchesViewSet, basename="matches")
 
 urlpatterns = [
     
@@ -17,5 +18,8 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', CustomUserCreate.as_view(), name='create_user'),
     path('logout/blacklist/', BlacklistTokenView.as_view(), name='blacklist'),
+
+
+    path('swipe/', SwipeApi.as_view(), name='swipe_user'),
 
 ] + router.urls

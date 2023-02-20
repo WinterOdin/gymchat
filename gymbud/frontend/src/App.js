@@ -384,9 +384,13 @@ export class App extends Component {
 
     performSendingMessage() {
         if (this.state.selectedDialog) {
+            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            console.log(this.state)
             let text = this.textInput.input.value;
             let user_pk = this.state.selectedDialog.id;
             this.clearTextInput();
+            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            console.log(this.state)
             let msgBox = sendOutgoingTextMessage(this.state.socket, text, user_pk, this.state.selfInfo);
             console.log("sendOutgoingTextMessage result:")
             console.log(msgBox)
