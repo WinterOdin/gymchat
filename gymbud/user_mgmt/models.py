@@ -89,11 +89,11 @@ class Matches(models.Model):
 class NotMatches(models.Model):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notmatch_first_user")
-    not_matched_user= models.ForeignKey(User, on_delete=models.CASCADE, related_name="notmatch_second_user")
+    matched_user= models.ForeignKey(User, on_delete=models.CASCADE, related_name="notmatch_second_user")
     date        = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return str(f"{self.user} not matched with {self.not_matched_user} on {self.date}")
+        return str(f"{self.user} not matched with {self.matched_user} on {self.date}")
     
 class FavoriteExercises(models.Model):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -119,7 +119,7 @@ class SocialLinks(models.Model):
     date        = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return str(f"{self.user} favorited {self.exercise} on {self.date}")
+        return str(f"{self.user} favorited {self.link}")
 
 #for now we are extening base user model in next step we need to connect with 
 #auth 

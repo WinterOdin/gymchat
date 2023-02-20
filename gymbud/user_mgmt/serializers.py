@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Profile
+from .models import User, Profile, UserSwipe, Matches, NotMatches, UserPhoto
 
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
@@ -42,4 +42,45 @@ class ProfileSerializer(serializers.ModelSerializer):
         model = Profile
         fields = '__all__'
         depth = 1
+
+
+
+
+
+class DisplayMatchedUsers(serializers.ModelSerializer):
+    matched_user = serializers.SerializerMethodField()
+    
+    def get_matched_user(self, obj):
+        user = obj.matched_user
+        photo = user.userphoto_set.first()
         
+        return {
+            "username": user.first_name,
+            "pk": str(user.id),
+            "url": photo.url if photo else None
+        }
+
+    class Meta:
+        model = Matches
+        fields = ("matched_user",)
+
+
+class UserSwipeSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = UserSwipe
+        fields = ('user', 'swiped_user', 'date', 'swipe')
+
+
+class MatchesSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Matches
+        fields = ('user', 'matched_user', 'date')
+
+
+class NotMatchesSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = NotMatches
+        fields = ('user', 'matched_user', 'date')

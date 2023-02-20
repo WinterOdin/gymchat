@@ -12,12 +12,12 @@ from .models import (
     DialogsModel,
     UploadedFile
 )
-from chat.models import Profile
+from user_mgmt.models import Profile, User
 from .serializers import serialize_message_model, serialize_dialog_model, serialize_file_model
 from django.db.models import Q
 
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+from rest_framework import status, viewsets
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpResponseBadRequest
 from django.core.paginator import Page, Paginator
 from django.conf import settings
@@ -25,8 +25,21 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.urls import reverse_lazy
 from django.forms import ModelForm
 import json
-
+from user_mgmt.models import Matches
+from user_mgmt.serializers import DisplayMatchedUsers
 from rest_framework import permissions
+from user_mgmt.permissions import DisplayMatchesPermission
+
+
+
+class UsersListView(viewsets.ModelViewSet):
+    permission_classes = [DisplayMatchesPermission]
+    serializer_class = DisplayMatchedUsers
+    
+    def get_queryset(self):
+        return Matches.objects.filter(user__id=self.request.user.id)
+
+
 
 class MessagesModelList(LoginRequiredMixin, ListView):
 
@@ -35,8 +48,8 @@ class MessagesModelList(LoginRequiredMixin, ListView):
     paginate_by = getattr(settings, 'MESSAGES_PAGINATION', 500)
     
     def get_queryset(self):
-
-        instance = Profile.objects.get(user=self.request.user)
+        
+        instance = User.objects.get(id=self.request.user.id)
         
 
         if self.kwargs.get('dialog_with'):
@@ -52,7 +65,8 @@ class MessagesModelList(LoginRequiredMixin, ListView):
         return qs.order_by('-created')
 
     def render_to_response(self, context, **response_kwargs):
-        user_pk = self.request.user.pk
+        user_pk = self.request.user.id
+      
         data = [serialize_message_model(i, user_pk) for i in context['object_list']]
         page: Page = context.pop('page_obj')
         paginator: Paginator = context.pop('paginator')
@@ -69,13 +83,15 @@ class DialogsModelList(LoginRequiredMixin, ListView):
     paginate_by = getattr(settings, 'DIALOGS_PAGINATION', 20)
 
     def get_queryset(self):
-        qs = DialogsModel.objects.filter(Q(user1_id=self.request.user.pk) | Q(user2_id=self.request.user.pk)) \
+        
+        qs = DialogsModel.objects.filter(Q(user1_id=self.request.user.id) | Q(user2_id=self.request.user.id)) \
             .select_related('user1', 'user2')
         return qs.order_by('-created')
 
     def render_to_response(self, context, **response_kwargs):
         # TODO: add online status
-        user_pk = self.request.user.pk
+        
+        user_pk = self.request.user.id
         data = [serialize_dialog_model(i, user_pk) for i in context['object_list']]
         page: Page = context.pop('page_obj')
         paginator: Paginator = context.pop('paginator')
@@ -89,13 +105,14 @@ class DialogsModelList(LoginRequiredMixin, ListView):
 
 class SelfInfoView(LoginRequiredMixin, DetailView):
     def get_object(self, queryset=None):
+
         return self.request.user
 
     def render_to_response(self, context, **response_kwargs):
         user: AbstractBaseUser = context['object']
         
         data = {
-            "username": user.get_short_name(),
+            "username": user.first_name,
             "pk": str(user.pk)
         }
         return JsonResponse(data, **response_kwargs)
@@ -133,7 +150,7 @@ class UploadView(LoginRequiredMixin, CreateView):
     form_class = UploadForm
 
     def form_valid(self, form: UploadForm):
-        self.object = UploadedFile.objects.create(uploaded_by=self.request.user, file=form.cleaned_data['file'])
+        self.object = UploadedFile.objects.create(uploaded_by=self.request.user.id, file=form.cleaned_data['file'])
         return JsonResponse(serialize_file_model(self.object))
 
     def form_invalid(self, form: UploadForm):
