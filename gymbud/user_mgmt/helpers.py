@@ -3,7 +3,7 @@ from .serializers import MatchesSerializer, NotMatchesSerializer
 
 
 
-def get_or_none(model_or_qs, **kwargs):
+def get_mstches_none(model_or_qs, **kwargs):
     try:
         return get_object_or_404(model_or_qs, **kwargs)
     except:

@@ -33,9 +33,6 @@ def get_message_by_id(mid: int) -> Awaitable[Optional[Tuple[str, str]]]:
     else:
         return None
 
-# @database_sync_to_async
-# def mark_message_as_read(mid: int, sender_pk: str, recipient_pk: str):
-#     return MessageModel.objects.filter(id__lte=mid,sender_id=sender_pk, recipient_id=recipient_pk).update(read=True)
 
 @database_sync_to_async
 def mark_message_as_read(mid: int) -> Awaitable[None]:

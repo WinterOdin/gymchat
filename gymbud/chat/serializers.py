@@ -3,6 +3,7 @@ from typing import Optional, Dict
 import os
 
 
+
 def serialize_file_model(m: UploadedFile) -> Dict[str, str]:
     return {'id': str(m.id), 'url': m.file.url,
             'size': m.file.size, 'name': os.path.basename(m.file.name)}
@@ -47,3 +48,4 @@ def serialize_dialog_model(m: DialogsModel, user_id):
         "last_message": last_message_ser
     }
     return obj
+

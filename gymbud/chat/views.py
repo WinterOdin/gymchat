@@ -28,7 +28,7 @@ import json
 from user_mgmt.models import Matches
 from user_mgmt.serializers import DisplayMatchedUsers
 from rest_framework import permissions
-from user_mgmt.permissions import DisplayMatchesPermission
+from .permissions import DisplayMatchesPermission, MessagePermission
 
 
 
@@ -41,9 +41,9 @@ class UsersListView(viewsets.ModelViewSet):
 
 
 
-class MessagesModelList(LoginRequiredMixin, ListView):
+class MessagesModelList(ListView):
 
-    permission_classes = [permissions.IsAuthenticated,]
+    permission_classes = [MessagePermission]
     http_method_names = ['get', ]
     paginate_by = getattr(settings, 'MESSAGES_PAGINATION', 500)
     
@@ -78,19 +78,21 @@ class MessagesModelList(LoginRequiredMixin, ListView):
         return JsonResponse(return_data, **response_kwargs)
 
 
-class DialogsModelList(LoginRequiredMixin, ListView):
+class DialogsModelList(ListView):
+
+    permission_classes = [MessagePermission]
     http_method_names = ['get', ]
     paginate_by = getattr(settings, 'DIALOGS_PAGINATION', 20)
 
     def get_queryset(self):
         
+        #if get_or_none(Matches, user=)
+
         qs = DialogsModel.objects.filter(Q(user1_id=self.request.user.id) | Q(user2_id=self.request.user.id)) \
             .select_related('user1', 'user2')
         return qs.order_by('-created')
 
     def render_to_response(self, context, **response_kwargs):
-        # TODO: add online status
-        
         user_pk = self.request.user.id
         data = [serialize_dialog_model(i, user_pk) for i in context['object_list']]
         page: Page = context.pop('page_obj')
@@ -104,6 +106,9 @@ class DialogsModelList(LoginRequiredMixin, ListView):
 
 
 class SelfInfoView(LoginRequiredMixin, DetailView):
+
+    permission_classes = [permissions.IsAuthenticated]
+
     def get_object(self, queryset=None):
 
         return self.request.user
@@ -128,32 +133,32 @@ class SelfInfoView(LoginRequiredMixin, DetailView):
 # 500MB - 429916160
 # MAX_UPLOAD_SIZE = getattr(settings, 'MAX_FILE_UPLOAD_SIZE', 5242880)
 
-class UploadForm(ModelForm):
-    # TODO: max file size validation
-    # def check_file(self):
-    #     content = self.cleaned_data["file"]
-    #     content_type = content.content_type.split('/')[0]
-    #     if (content._size > MAX_UPLOAD_SIZE):
-    #         raise forms.ValidationError(_("Please keep file size under %s. Current file size %s")%(filesizeformat(MAX_UPLOAD_SIZE), filesizeformat(content._size)))
-    #     return content
-    #
-    # def clean(self):
+# class UploadForm(ModelForm):
+#     # TODO: max file size validation
+#     # def check_file(self):
+#     #     content = self.cleaned_data["file"]
+#     #     content_type = content.content_type.split('/')[0]
+#     #     if (content._size > MAX_UPLOAD_SIZE):
+#     #         raise forms.ValidationError(_("Please keep file size under %s. Current file size %s")%(filesizeformat(MAX_UPLOAD_SIZE), filesizeformat(content._size)))
+#     #     return content
+#     #
+#     # def clean(self):
 
-    class Meta:
-        model = UploadedFile
-        fields = ['file']
+#     class Meta:
+#         model = UploadedFile
+#         fields = ['file']
 
 
-class UploadView(LoginRequiredMixin, CreateView):
-    http_method_names = ['post', ]
-    model = UploadedFile
-    form_class = UploadForm
+# class UploadView(LoginRequiredMixin, CreateView):
+#     http_method_names = ['post', ]
+#     model = UploadedFile
+#     form_class = UploadForm
 
-    def form_valid(self, form: UploadForm):
-        self.object = UploadedFile.objects.create(uploaded_by=self.request.user.id, file=form.cleaned_data['file'])
-        return JsonResponse(serialize_file_model(self.object))
+#     def form_valid(self, form: UploadForm):
+#         self.object = UploadedFile.objects.create(uploaded_by=self.request.user.id, file=form.cleaned_data['file'])
+#         return JsonResponse(serialize_file_model(self.object))
 
-    def form_invalid(self, form: UploadForm):
-        context = self.get_context_data(form=form)
-        errors_json: str = context['form'].errors.get_json_data()
-        return HttpResponseBadRequest(content=json.dumps({'errors': errors_json}))
+#     def form_invalid(self, form: UploadForm):
+#         context = self.get_context_data(form=form)
+#         errors_json: str = context['form'].errors.get_json_data()
+#         return HttpResponseBadRequest(content=json.dumps({'errors': errors_json}))

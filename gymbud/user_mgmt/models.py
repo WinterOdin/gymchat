@@ -53,6 +53,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         return self.email
 
 
+
 class UserPhoto(models.Model):
     id      = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user    = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -131,11 +132,6 @@ class Profile(models.Model):
         ("3", "Other")
     ]
 
-    EXERCISES = [
-        ("1", "Lateral Raiise"),
-        ("2", "Bench Press"),
-        ("3", "Squats")
-    ]
 
     id              = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user            = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -153,7 +149,8 @@ class Profile(models.Model):
     @property
     def num_likes(self):
         return self.matched.all().count()
-    
+
+ 
 
 
 

@@ -8,7 +8,7 @@ from django.contrib.auth.password_validation import validate_password
 class RegisterUserSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True,  validators=[validate_password])
-    password2=serializers.CharField(write_only=True)
+    password2 = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
@@ -36,14 +36,20 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
         return user
 
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        exclude = ('password', 'is_superuser', 'is_staff')
+
 class ProfileSerializer(serializers.ModelSerializer):
+
+    user = UserSerializer()
 
     class Meta:
         model = Profile
         fields = '__all__'
         depth = 1
-
-
 
 
 
