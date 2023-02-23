@@ -3,8 +3,6 @@ from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-from locations.models import Places, Gym
-
 
 class CustomAccountManager(BaseUserManager):
 
@@ -96,11 +94,48 @@ class NotMatches(models.Model):
     def __str__(self):
         return str(f"{self.user} not matched with {self.matched_user} on {self.date}")
     
+
+#having this here due to imprting issues 
+class Places(models.Model):
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    city        = models.CharField(max_length=20)
+    street      = models.CharField(max_length=20)
+    state       = models.CharField(max_length=20)
+    country     = models.CharField(max_length=20)
+    placeId     = models.CharField(max_length=100)
+    latitude    = models.FloatField(blank=True, null=True)
+    longitude   = models.FloatField(blank=True, null=True)
+    dateCreated = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(f"{self.city} {self.street}")
+
+
+class Gym(models.Model):
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name        = models.CharField(max_length=20)
+    place       = models.ForeignKey(Places, on_delete=models.CASCADE)
+    date        = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(f"{self.name}")
+
+class Exercise(models.Model):
+
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name        = models.CharField(max_length=40)
+    category    = models.CharField(max_length=20)
+    authorized  = models.BooleanField(default=False)
+    dateCreated = models.DateTimeField(auto_now_add=True)
+    
+
+
 class FavoriteExercises(models.Model):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user        = models.ForeignKey(User, on_delete=models.CASCADE)
-    exercise    = models.CharField(max_length=12)
+    exercise    = models.ForeignKey(Exercise, on_delete=models.CASCADE)
     date        = models.DateTimeField(auto_now_add=True)
+    
 
     def __str__(self):
         return str(f"{self.user} favorited {self.exercise} on {self.date}")
@@ -122,8 +157,6 @@ class SocialLinks(models.Model):
     def __str__(self):
         return str(f"{self.user} favorited {self.link}")
 
-#for now we are extening base user model in next step we need to connect with 
-#auth 
 class Profile(models.Model):
 
     GENDER = [
@@ -140,8 +173,8 @@ class Profile(models.Model):
     bio             = models.TextField(null=True)
     place           = models.ForeignKey(Places, on_delete=models.CASCADE)
     playlist        = models.CharField(max_length=25, null=True)
-    dateCreated     = models.DateTimeField(auto_now_add=True)
-    dateUpdated     = models.DateTimeField(auto_now=True)
+    date_created     = models.DateTimeField(auto_now_add=True)
+    date_updated     = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.user.email)
@@ -150,9 +183,12 @@ class Profile(models.Model):
     def num_likes(self):
         return self.matched.all().count()
 
- 
-
-
+class Blocked(models.Model):
+    
+    id           = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user         = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_thats_blocking")
+    blocked_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blocked_user")
+    date_created = models.DateTimeField(auto_now_add=True)
 
 
 

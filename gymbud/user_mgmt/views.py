@@ -7,8 +7,8 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractBaseUser
 from django.http import JsonResponse
 from django.views.generic import TemplateView, ListView
-from .models import Profile, User, UserSwipe, Matches
-from .serializers import ProfileSerializer, DisplayMatchedUsers, UserSwipeSerializer, RegisterUserSerializer
+from .models import Profile, User, UserSwipe, Matches, Blocked
+from .serializers import ProfileSerializer, DisplayMatchedUsers, UserSwipeSerializer, RegisterUserSerializer, BlockedSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import ProfilePermission
 from chat.permissions import DisplayMatchesPermission
@@ -27,8 +27,17 @@ class ProfileViewSet(viewsets.ModelViewSet):
     pagination_class = ProfilePagination
 
     def get_queryset(self):
+
+        current_id = self.request.user.id
+        blocked_users = Blocked.objects.filter(user__id=current_id).values('blocked_user')
+
+        users_taken_action = UserSwipe.objects.filter(user__id=current_id).values('swiped_user')
+
+        users_not_taken_action = Profile.objects.exclude(user__in=users_taken_action) \
+            .exclude(user__in=blocked_users).exclude(user__id=current_id)
+
         
-        return Profile.objects.all().exclude(user__id=self.request.user.id)
+        return users_not_taken_action
 
 
 class MatchesViewSet(viewsets.ModelViewSet):
@@ -37,6 +46,13 @@ class MatchesViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         return Matches.objects.filter(user__id=self.request.user.id)
+
+
+class BlockedViewSet(viewsets.ModelViewSet):
+    serializer_class = BlockedSerializer
+
+    def get_queryset(self):
+        return Blocked.objects.filter(user__id=self.request.user.id)
 
 
 
@@ -103,6 +119,8 @@ class CustomUserCreate(APIView):
                 return Response(status=status.HTTP_201_CREATED)
 
         return Response(reg_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
 
 class BlacklistTokenView(APIView):

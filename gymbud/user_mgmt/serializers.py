@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, Profile, UserSwipe, Matches, NotMatches, UserPhoto
+from .models import User, Profile, UserSwipe, Matches, NotMatches, UserPhoto, Blocked, Gym, Places
 
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
@@ -41,6 +41,7 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         exclude = ('password', 'is_superuser', 'is_staff')
+
 
 class ProfileSerializer(serializers.ModelSerializer):
 
@@ -90,3 +91,20 @@ class NotMatchesSerializer(serializers.ModelSerializer):
     class Meta:
         model = NotMatches
         fields = ('user', 'matched_user', 'date')
+
+
+class BlockedSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Blocked
+        fields = ('user', 'blocked_user')
+
+class PlaceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Places
+        exclude = '__all__'
+
+class GymSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Gym
+        exclude = '__all__'
