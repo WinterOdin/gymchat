@@ -126,8 +126,10 @@ class Exercise(models.Model):
     name        = models.CharField(max_length=40)
     category    = models.CharField(max_length=20)
     authorized  = models.BooleanField(default=False)
-    dateCreated = models.DateTimeField(auto_now_add=True)
+    date        = models.DateTimeField(auto_now_add=True)
     
+    def __str__(self):
+        return str(f"{self.name}")
 
 
 class FavoriteExercises(models.Model):

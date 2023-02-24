@@ -13,6 +13,7 @@ admin.site.register(NotMatches)
 admin.site.register(FavoriteExercises)
 admin.site.register(SocialLinks)
 admin.site.register(Blocked)
+admin.site.register(Exercise)
 
 from django.contrib import admin
 from .models import User

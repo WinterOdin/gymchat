@@ -53,7 +53,7 @@ class BlockedViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Blocked.objects.filter(user__id=self.request.user.id)
-
+        
 
 
 class SwipeApi(APIView):
@@ -101,8 +101,6 @@ class SwipeApi(APIView):
 
         
         return Response(status=status.HTTP_200_OK)
-
-
 
 
 
