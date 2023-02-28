@@ -4,6 +4,23 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
+
+#having this here due to imprting issues 
+class Location(models.Model):
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    city        = models.CharField(max_length=20)
+    street      = models.CharField(max_length=20)
+    state       = models.CharField(max_length=20)
+    country     = models.CharField(max_length=20)
+    placeId     = models.CharField(max_length=100)
+    latitude    = models.FloatField(blank=True, null=True)
+    longitude   = models.FloatField(blank=True, null=True)
+    dateCreated = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(f"{self.city} {self.street}")
+        
+
 class CustomAccountManager(BaseUserManager):
 
     def create_superuser(self, email, first_name, password, **other_fields):
@@ -38,6 +55,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email       = models.EmailField(_('email address'), unique=True)
     first_name  = models.CharField(max_length=150, blank=True)
+    place       = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="current_location")
     start_date  = models.DateTimeField(default=timezone.now)
     is_staff    = models.BooleanField(default=False)
     is_active   = models.BooleanField(default=False)
@@ -49,7 +67,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
-
 
 
 class UserPhoto(models.Model):
@@ -95,26 +112,11 @@ class NotMatches(models.Model):
         return str(f"{self.user} not matched with {self.matched_user} on {self.date}")
     
 
-#having this here due to imprting issues 
-class Places(models.Model):
-    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    city        = models.CharField(max_length=20)
-    street      = models.CharField(max_length=20)
-    state       = models.CharField(max_length=20)
-    country     = models.CharField(max_length=20)
-    placeId     = models.CharField(max_length=100)
-    latitude    = models.FloatField(blank=True, null=True)
-    longitude   = models.FloatField(blank=True, null=True)
-    dateCreated = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return str(f"{self.city} {self.street}")
-
 
 class Gym(models.Model):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name        = models.CharField(max_length=20)
-    place       = models.ForeignKey(Places, on_delete=models.CASCADE)
+    place       = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="gym_location")
     date        = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -173,10 +175,9 @@ class Profile(models.Model):
     gym             = models.ForeignKey(Gym, on_delete=models.CASCADE)
     gender          = models.CharField(max_length=10, null=True, choices=GENDER)
     bio             = models.TextField(null=True)
-    place           = models.ForeignKey(Places, on_delete=models.CASCADE)
     playlist        = models.CharField(max_length=25, null=True)
-    date_created     = models.DateTimeField(auto_now_add=True)
-    date_updated     = models.DateTimeField(auto_now=True)
+    date_created    = models.DateTimeField(auto_now_add=True)
+    date_updated    = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return str(self.user.email)

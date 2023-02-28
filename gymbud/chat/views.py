@@ -27,10 +27,9 @@ from django.forms import ModelForm
 import json
 from user_mgmt.models import Matches
 from user_mgmt.serializers import DisplayMatchedUsers
-from rest_framework import permissions
+from rest_framework.permissions import IsAuthenticated
 from .permissions import DisplayMatchesPermission, MessagePermission
-
-
+from rest_framework.views import APIView
 
 class UsersListView(viewsets.ModelViewSet):
     permission_classes = [DisplayMatchesPermission]
@@ -105,16 +104,13 @@ class DialogsModelList(ListView):
         return JsonResponse(return_data, **response_kwargs)
 
 
-class SelfInfoView(LoginRequiredMixin, DetailView):
 
-    permission_classes = [permissions.IsAuthenticated]
+class SelfInfoView(APIView):
 
-    def get_object(self, queryset=None):
-
-        return self.request.user
-
-    def render_to_response(self, context, **response_kwargs):
-        user: AbstractBaseUser = context['object']
+    permission_classes = [IsAuthenticated]
+    def get(self, request, **response_kwargs):
+        user = self.request.user
+        print(user)
         
         data = {
             "username": user.first_name,
@@ -123,6 +119,9 @@ class SelfInfoView(LoginRequiredMixin, DetailView):
         return JsonResponse(data, **response_kwargs)
 
 
+    def post(self, request):
+
+        return JsonResponse({"messages":"message"})
 # 2.5MB - 2621440
 # 5MB - 5242880
 # 10MB - 10485760

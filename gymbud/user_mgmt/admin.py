@@ -5,7 +5,7 @@ from .models import *
 # Register your models here.
 admin.site.register(Profile)
 admin.site.register(Gym)
-admin.site.register(Places)
+admin.site.register(Location)
 admin.site.register(UserPhoto)
 admin.site.register(UserSwipe)
 admin.site.register(Matches)
