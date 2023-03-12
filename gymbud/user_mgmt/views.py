@@ -8,7 +8,7 @@ from django.contrib.auth.models import AbstractBaseUser
 from django.http import JsonResponse
 from django.views.generic import TemplateView, ListView
 from .models import Profile, User, UserSwipe, Matches, Blocked
-from .serializers import ProfileSerializer, DisplayMatchedUsers, UserSwipeSerializer, RegisterUserSerializer, BlockedSerializer
+from .serializers import UserRangeSerializer, UserSerializer, ProfileSerializer, DisplayMatchedUsers, UserSwipeSerializer, RegisterUserSerializer, BlockedSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import ProfilePermission
 from chat.permissions import DisplayMatchesPermission
@@ -20,11 +20,28 @@ from .helpers import matched_router
 
 UserModel = get_user_model()
 
+class UserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UserSerializer
+
+    def get(self, request):
+        serializer = UserSerializer(User.objects.get(id=self.request.user.id))
+        return Response(serializer.data)
+
+    def patch(self, request):
+        
+        serializer = UserRangeSerializer(User.objects.get(id=self.request.user.id), data=request.data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
 
 class ProfileViewSet(viewsets.ModelViewSet):
     permission_classes = [ProfilePermission]
     serializer_class = ProfileSerializer
-    pagination_class = ProfilePagination
+    #pagination_class = ProfilePagination
 
     def get_queryset(self):
 
@@ -82,11 +99,10 @@ class SwipeApi(APIView):
                     #need to refactor this
                 
                     if get_swiped_user:
-                        if get_swiped_user.swipe == "like":
-                            if matched_router(request.data):
+                        if matched_router(request.data):
+                            if get_swiped_user.swipe == "like":
                                 JsonResponse({'message':'matched'}, status=status.HTTP_201_CREATED)
-                        elif get_swiped_user.swipe == "dislike":
-                            if matched_router(request.data):
+                            elif get_swiped_user.swipe == "dislike":
                                 JsonResponse({'message':'not matched'}, status=status.HTTP_201_CREATED)
 
                 swipe_ser.save()
