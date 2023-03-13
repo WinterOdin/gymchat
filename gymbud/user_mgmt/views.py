@@ -17,6 +17,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from .helpers import matched_router
+from .filters import ProfileFilter
 
 UserModel = get_user_model()
 
@@ -41,7 +42,8 @@ class UserAPIView(APIView):
 class ProfileViewSet(viewsets.ModelViewSet):
     permission_classes = [ProfilePermission]
     serializer_class = ProfileSerializer
-    #pagination_class = ProfilePagination
+    pagination_class = ProfilePagination
+    filterset_class  = ProfileFilter
 
     def get_queryset(self):
 
@@ -55,6 +57,15 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
         
         return users_not_taken_action
+
+    def create(self, request):
+        serializer = ProfileSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            data = serializer.data
+            return Response(data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MatchesViewSet(viewsets.ModelViewSet):

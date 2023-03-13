@@ -105,59 +105,14 @@ class DialogsModelList(ListView):
 
 
 
-class SelfInfoView(APIView):
+class ChatSelfInfoView(APIView):
 
     permission_classes = [IsAuthenticated]
     def get(self, request, **response_kwargs):
         user = self.request.user
-        print(user)
         
         data = {
             "username": user.first_name,
             "pk": str(user.pk)
         }
         return JsonResponse(data, **response_kwargs)
-
-
-    def post(self, request):
-
-        return JsonResponse({"messages":"message"})
-# 2.5MB - 2621440
-# 5MB - 5242880
-# 10MB - 10485760
-# 20MB - 20971520
-# 50MB - 5242880
-# 100MB 104857600
-# 250MB - 214958080
-# 500MB - 429916160
-# MAX_UPLOAD_SIZE = getattr(settings, 'MAX_FILE_UPLOAD_SIZE', 5242880)
-
-# class UploadForm(ModelForm):
-#     # TODO: max file size validation
-#     # def check_file(self):
-#     #     content = self.cleaned_data["file"]
-#     #     content_type = content.content_type.split('/')[0]
-#     #     if (content._size > MAX_UPLOAD_SIZE):
-#     #         raise forms.ValidationError(_("Please keep file size under %s. Current file size %s")%(filesizeformat(MAX_UPLOAD_SIZE), filesizeformat(content._size)))
-#     #     return content
-#     #
-#     # def clean(self):
-
-#     class Meta:
-#         model = UploadedFile
-#         fields = ['file']
-
-
-# class UploadView(LoginRequiredMixin, CreateView):
-#     http_method_names = ['post', ]
-#     model = UploadedFile
-#     form_class = UploadForm
-
-#     def form_valid(self, form: UploadForm):
-#         self.object = UploadedFile.objects.create(uploaded_by=self.request.user.id, file=form.cleaned_data['file'])
-#         return JsonResponse(serialize_file_model(self.object))
-
-#     def form_invalid(self, form: UploadForm):
-#         context = self.get_context_data(form=form)
-#         errors_json: str = context['form'].errors.get_json_data()
-#         return HttpResponseBadRequest(content=json.dumps({'errors': errors_json}))

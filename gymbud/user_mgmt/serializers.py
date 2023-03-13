@@ -37,10 +37,16 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         return user
 
 
+class UserRangeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('search_range',)
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        exclude = ('password', 'is_superuser', 'is_staff')
+        exclude = ('password', 'is_superuser', 'is_staff', 'groups', 'user_permissions')
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -99,27 +105,4 @@ class BlockedSerializer(serializers.ModelSerializer):
         model = Blocked
         fields = ('user', 'blocked_user')
 
-class LocationSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = Location
-        fields = '__all__'
-
-class GymSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Gym
-        fields = '__all__'
-
-
-class ExerciseSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Exercise
-        fields = '__all__'
-
-class UserLocation(serializers.ModelSerializer):
-
-    class Meta:
-        model = Profile
-        fields = ()
