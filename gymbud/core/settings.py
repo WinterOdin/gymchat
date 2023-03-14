@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'corsheaders', 
     'rest_framework_simplejwt.token_blacklist',
     'django_filters',
+    'crispy_forms',
+    'crispy_bootstrap5'
 ]
 
 MIDDLEWARE = [
@@ -132,7 +134,10 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
     
 }
 
@@ -184,8 +189,9 @@ ALLOWED_HOSTS = ['*']
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
 
-
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 # LOGGING = {
 #     'version': 1,
 #     'disable_existing_loggers': False,

@@ -6,7 +6,7 @@ class GymLocationPermission(permissions.BasePermission):
         if view.action == ['list', 'create', 'retrieve']:
             return request.user.is_authenticated 
         elif view.action in ['update', 'partial_update', 'destroy']:
-            return False
+            return request.user.is_staff
         else:
             return False
                                                                                                 

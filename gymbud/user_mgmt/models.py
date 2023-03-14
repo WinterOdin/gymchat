@@ -55,7 +55,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email       = models.EmailField(_('email address'), unique=True)
     first_name  = models.CharField(max_length=150, blank=True)
-    current_location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="current_location", null=True)
+    current_location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="location", null=True)
     search_range = models.PositiveSmallIntegerField(default=10, blank=True, null=True)
     start_date  = models.DateTimeField(default=timezone.now)
     is_staff    = models.BooleanField(default=False)

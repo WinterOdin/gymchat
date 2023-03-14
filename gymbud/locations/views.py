@@ -4,33 +4,53 @@ from django.http import JsonResponse
 from .serializers import LocationSerializer, GymSerializer, ExerciseSerializer
 from user_mgmt.models import Gym, Location, Exercise
 from .permissions import GymLocationPermission
+from rest_framework.response import Response
+from .mixins import EnablePartialUpdateMixin
 # Create your views here.
 
-class ExerciseViewSet(viewsets.ModelViewSet):
+class ExerciseViewSet(EnablePartialUpdateMixin, viewsets.ModelViewSet):
     serializer_class = ExerciseSerializer
+    get_queryset = Exercise.objects.all()
 
     def get_queryset(self):
         return Exercise.objects.all()
 
-class LocationViewSet(viewsets.ViewSet):
+    def create(self, request):
+        serializer = LocationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            data = serializer.data
+            return Response(data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class LocationViewSet(EnablePartialUpdateMixin, viewsets.ModelViewSet):
     permission_classes = [GymLocationPermission]
     serializer_class = LocationSerializer
     get_queryset = Location.objects.all()
-
-    def partial_update(self, request, slug):
-        
-        user = User.objects.get(id=self.request.id)
-        location = Location.objects.get(id=user__current_location_id)
-        serializer = LocationSerializer(location, data=request.data)
-        
+    
+    def create(self, request):
+        serializer = LocationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=HTTP_200_CREATED)
-        return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
+            data = serializer.data
+            return Response(data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
-class GymViewSet(viewsets.ViewSet):
+class GymViewSet(EnablePartialUpdateMixin, viewsets.ModelViewSet):
     permission_classes = [GymLocationPermission]
     serializer_class = GymSerializer
     get_queryset = Gym.objects.all()
+
+    def create(self, request):
+        serializer = GymSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            data = serializer.data
+            return Response(data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

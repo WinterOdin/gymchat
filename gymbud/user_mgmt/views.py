@@ -40,7 +40,7 @@ class UserAPIView(APIView):
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
-    permission_classes = [ProfilePermission]
+    #permission_classes = [ProfilePermission]
     serializer_class = ProfileSerializer
     pagination_class = ProfilePagination
     filterset_class  = ProfileFilter
@@ -74,6 +74,7 @@ class MatchesViewSet(viewsets.ModelViewSet):
     
     def get_queryset(self):
         return Matches.objects.filter(user__id=self.request.user.id)
+
 
 
 class BlockedViewSet(viewsets.ModelViewSet):
