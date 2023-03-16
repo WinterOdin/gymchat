@@ -61,7 +61,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
     def create(self, request):
         serializer = ProfileSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(user=request.user)
             data = serializer.data
             return Response(data, status=status.HTTP_201_CREATED)
         else:

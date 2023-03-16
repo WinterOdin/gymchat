@@ -13,6 +13,8 @@ class LocationSerializer(serializers.ModelSerializer):
 
 class GymSerializer(serializers.ModelSerializer):
 
+    place = LocationSerializer(read_only=True)
+
     class Meta:
         model = Gym
         fields = '__all__'

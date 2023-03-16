@@ -1,9 +1,10 @@
 from rest_framework import serializers
-from .models import User, Profile, UserSwipe, Matches, NotMatches, UserPhoto, Blocked, Gym, Location, Exercise
+from .models import User, Profile, UserSwipe, Matches, NotMatches, UserPhoto, Blocked, Gym, Location, Exercise, FavoriteExercise
 
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
-
+from drf_writable_nested import WritableNestedModelSerializer
+from locations.serializers import GymSerializer, LocationSerializer
 
 class RegisterUserSerializer(serializers.ModelSerializer):
 
@@ -36,7 +37,6 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
         return user
 
-
 class UserRangeSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -49,15 +49,40 @@ class UserSerializer(serializers.ModelSerializer):
         exclude = ('password', 'is_superuser', 'is_staff', 'groups', 'user_permissions')
 
 
-class ProfileSerializer(serializers.ModelSerializer):
+class PhotoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserPhoto
+        fields = ('id', 'order', 'url')
 
-    user = UserSerializer()
+
+class ExerciseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exercise
+        fields = ('name', 'category', 'authorized')
+
+
+class ProfileSerializer(WritableNestedModelSerializer, serializers.ModelSerializer):
+    
+    fav_exercise = serializers.SerializerMethodField(read_only=True)
+    images = serializers.SerializerMethodField(read_only=True)
+    user = UserSerializer(read_only=True)
+    gym = GymSerializer(read_only=True)
+    
+
+    def get_images(self, obj):
+        return PhotoSerializer(UserPhoto.objects.filter(user=obj.user.id), many=True).data
+
+    def get_fav_exercise(self, obj):
+        fav_exercise_id = FavoriteExercise.objects.get(user=obj.user.id).id
+        
+
+        return ExerciseSerializer(Exercise.objects.get(id=fav_exercise_id)).data
 
     class Meta:
         model = Profile
         fields = '__all__'
         depth = 1
-
+        
 
 
 

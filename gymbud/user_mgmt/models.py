@@ -135,7 +135,7 @@ class Exercise(models.Model):
         return str(f"{self.name}")
 
 
-class FavoriteExercises(models.Model):
+class FavoriteExercise(models.Model):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user        = models.ForeignKey(User, on_delete=models.CASCADE)
     exercise    = models.ForeignKey(Exercise, on_delete=models.CASCADE)
@@ -155,7 +155,7 @@ class SocialLinks(models.Model):
 
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user        = models.ForeignKey(User, on_delete=models.CASCADE)
-    type        = models.CharField(max_length=12, null=True, choices=SocialLinksType)
+    social_type = models.CharField(max_length=12, choices=SocialLinksType)
     link        = models.CharField(max_length=100)
     date        = models.DateTimeField(auto_now_add=True)
 
@@ -173,10 +173,10 @@ class Profile(models.Model):
 
     id              = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user            = models.OneToOneField(User, on_delete=models.CASCADE)
-    gym             = models.ForeignKey(Gym, on_delete=models.CASCADE)
-    gender          = models.CharField(max_length=10, null=True, choices=GENDER)
-    bio             = models.TextField(null=True)
-    playlist        = models.CharField(max_length=25, null=True)
+    gym             = models.OneToOneField(Gym, null=True, blank=True, on_delete=models.DO_NOTHING)
+    gender          = models.CharField(max_length=10, choices=GENDER)
+    bio             = models.TextField(null=True, blank=True)
+    playlist        = models.CharField(max_length=25, null=True, blank=True)
     date_created    = models.DateTimeField(auto_now_add=True)
     date_updated    = models.DateTimeField(auto_now=True)
 
