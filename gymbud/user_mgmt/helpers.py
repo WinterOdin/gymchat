@@ -1,3 +1,4 @@
+from datetime import date
 from django.shortcuts import get_object_or_404
 from .serializers import MatchesSerializer, NotMatchesSerializer
 
@@ -30,3 +31,12 @@ def matched_router(model_obj):
         if not_licked.is_valid():
             not_licked.save()
             return True
+
+
+def age_restriction(dob):
+    print(dob)
+    today = date.today()
+    age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+    if age >= 18:
+        return age
+    raise serializers.ValidationError("You are no eligible to use our app.")

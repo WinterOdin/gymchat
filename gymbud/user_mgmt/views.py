@@ -40,7 +40,7 @@ class UserAPIView(APIView):
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
-    #permission_classes = [ProfilePermission]
+    permission_classes = [ProfilePermission]
     serializer_class = ProfileSerializer
     pagination_class = ProfilePagination
     filterset_class  = ProfileFilter
@@ -53,7 +53,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
         users_taken_action = UserSwipe.objects.filter(user__id=current_id).values('swiped_user')
 
         users_not_taken_action = Profile.objects.exclude(user__in=users_taken_action) \
-            .exclude(user__in=blocked_users).exclude(user__id=current_id)
+            .exclude(user__in=blocked_users)#.exclude(user__id=current_id)
 
         
         return users_not_taken_action

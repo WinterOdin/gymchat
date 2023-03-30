@@ -3,12 +3,8 @@ from rest_framework import permissions
 class ProfilePermission(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        if view.action == 'list':
+        if view.action in ['list', 'retrieve']:
             return request.user.is_authenticated 
-        elif view.action == 'create':
-            return True
-        elif view.action in ['retrieve', 'update', 'partial_update', 'destroy']:
-            return True
         else:
             return False
                                                                                                 
@@ -17,10 +13,8 @@ class ProfilePermission(permissions.BasePermission):
         if not request.user.is_authenticated:
             return False
 
-        if view.action in ['update', 'partial_update', 'retrieve']:
+        if view.action in ['update', 'partial_update', 'retrieve', 'destroy']:
             return obj == request.user or request.user.is_staff
-        elif view.action == 'destroy':
-            return request.user.is_staff
         else:
             return False
 

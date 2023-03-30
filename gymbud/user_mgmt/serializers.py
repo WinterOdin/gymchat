@@ -1,19 +1,21 @@
+from datetime import date
 from rest_framework import serializers
 from .models import User, Profile, UserSwipe, Matches, NotMatches, UserPhoto, Blocked, Gym, Location, Exercise, FavoriteExercise
-
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.password_validation import validate_password
 from drf_writable_nested import WritableNestedModelSerializer
 from locations.serializers import GymSerializer, LocationSerializer
+
 
 class RegisterUserSerializer(serializers.ModelSerializer):
 
     password = serializers.CharField(write_only=True,  validators=[validate_password])
     password2 = serializers.CharField(write_only=True)
 
+
     class Meta:
         model = User
-        fields=('email', 'first_name', 'password','password2')
+        fields=('email', 'first_name', 'birthday', 'password', 'password2')
 
     def validate(self, attrs):
 
@@ -26,16 +28,23 @@ class RegisterUserSerializer(serializers.ModelSerializer):
 
 
     def create(self, validated_data):
-        user = User.objects.create(
-            first_name=validated_data['first_name'],
-            email=validated_data['email'],
-        )
+        dob = validated_data['birthday']
+        today = date.today()
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        if age >= 18:
+            user = User.objects.create(
+                first_name = validated_data['first_name'],
+                email = validated_data['email'],
+                birthday = dob,
+                age = age
+            )
+            user.set_password(validated_data['password'])
+            user.save()
 
-        
-        user.set_password(validated_data['password'])
-        user.save()
+            return user        
 
-        return user
+        raise serializers.ValidationError("You are not eligible to use our app.")
+    
 
 class UserRangeSerializer(serializers.ModelSerializer):
     class Meta:
@@ -73,19 +82,19 @@ class ProfileSerializer(WritableNestedModelSerializer, serializers.ModelSerializ
         return PhotoSerializer(UserPhoto.objects.filter(user=obj.user.id), many=True).data
 
     def get_fav_exercise(self, obj):
-        fav_exercise_id = FavoriteExercise.objects.get(user=obj.user.id).id
+        fav_exercise = FavoriteExercise.objects.get(user=obj.user.id).exercise
         
-
-        return ExerciseSerializer(Exercise.objects.get(id=fav_exercise_id)).data
+        return {
+            "id": fav_exercise.id,
+            "name": fav_exercise.name,
+            "category": fav_exercise.category,
+        }
 
     class Meta:
         model = Profile
         fields = '__all__'
         depth = 1
         
-
-
-
 
 class DisplayMatchedUsers(serializers.ModelSerializer):
     matched_user = serializers.SerializerMethodField()

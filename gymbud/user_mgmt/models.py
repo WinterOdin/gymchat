@@ -1,6 +1,9 @@
 import uuid
+from datetime import date
 from django.db import models
 from django.utils import timezone
+from .model_fields import BirthdayField
+from .model_managers import BirthdayManager
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
@@ -23,7 +26,7 @@ class Location(models.Model):
 
 class CustomAccountManager(BaseUserManager):
 
-    def create_superuser(self, email, first_name, password, **other_fields):
+    def create_superuser(self, email, first_name, password, birthday, **other_fields):
 
         other_fields.setdefault('is_staff', True)
         other_fields.setdefault('is_superuser', True)
@@ -36,12 +39,24 @@ class CustomAccountManager(BaseUserManager):
             raise ValueError(
                 'Superuser must be assigned to is_superuser=True.')
 
-        return self.create_user(email, first_name, password, **other_fields)
+        return self.create_user(email, first_name, password, birthday, **other_fields)
 
-    def create_user(self, email, first_name, password, **other_fields):
+    def age_restriction(self, dob):
+        today = date.today()
+        age = today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+
+        return age
+
+    def create_user(self, email, first_name, password, birthday, **other_fields):
 
         if not email:
             raise ValueError(_('You must provide an email address'))
+        
+        if not birthday:
+            raise ValueError(_('You must provide a date of birth'))
+        age = self.age_restriction(birthday)
+        if age < 18:
+            raise ValueError(_('You are to young'))
 
         email = self.normalize_email(email)
         user = self.model(email=email, first_name=first_name, **other_fields)
@@ -55,6 +70,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email       = models.EmailField(_('email address'), unique=True)
     first_name  = models.CharField(max_length=150, blank=True)
+    birthday    = models.DateField(blank=True, null=True)
+    age         = models.PositiveIntegerField(blank=True, null=True)
     current_location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="location", null=True)
     search_range = models.PositiveSmallIntegerField(default=10, blank=True, null=True)
     start_date  = models.DateTimeField(default=timezone.now)
@@ -63,8 +80,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = CustomAccountManager()
 
+
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name']
+    REQUIRED_FIELDS = ['first_name', 'birthday']
 
     def __str__(self):
         return self.email
