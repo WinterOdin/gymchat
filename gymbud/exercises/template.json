@@ -1,0 +1,10 @@
+{
+    "model": "user_mgmt.exercise",
+    "pk": 1,
+    "fields": {
+      "name": "",
+      "category": "",
+      "authorized": "" ,
+      "date": "2023-05-01"
+    }
+}

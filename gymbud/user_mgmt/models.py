@@ -2,13 +2,10 @@ import uuid
 from datetime import date
 from django.db import models
 from django.utils import timezone
-from .model_fields import BirthdayField
-from .model_managers import BirthdayManager
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
-
-#having this here due to imprting issues 
+ 
 class Location(models.Model):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     city        = models.CharField(max_length=20)
@@ -72,7 +69,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name  = models.CharField(max_length=150, blank=True)
     birthday    = models.DateField(blank=True, null=True)
     age         = models.PositiveIntegerField(blank=True, null=True)
-    current_location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="location", null=True)
+    current_location = models.ForeignKey(Location, on_delete=models.SET_NULL, related_name="location", null=True)
     search_range = models.PositiveSmallIntegerField(default=10, blank=True, null=True)
     start_date  = models.DateTimeField(default=timezone.now)
     is_staff    = models.BooleanField(default=False)
@@ -135,7 +132,7 @@ class NotMatches(models.Model):
 class Gym(models.Model):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name        = models.CharField(max_length=20)
-    place       = models.ForeignKey(Location, on_delete=models.CASCADE, related_name="gym_location")
+    place       = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, related_name="gym_location")
     date        = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -191,7 +188,7 @@ class Profile(models.Model):
 
     id              = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user            = models.OneToOneField(User, on_delete=models.CASCADE)
-    gym             = models.OneToOneField(Gym, null=True, blank=True, on_delete=models.DO_NOTHING)
+    gym             = models.OneToOneField(Gym, null=True, blank=True, on_delete=models.SET_NULL)
     gender          = models.CharField(max_length=10, choices=GENDER)
     bio             = models.TextField(null=True, blank=True)
     playlist        = models.CharField(max_length=25, null=True, blank=True)
@@ -211,32 +208,3 @@ class Blocked(models.Model):
     user         = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_thats_blocking")
     blocked_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blocked_user")
     date_created = models.DateTimeField(auto_now_add=True)
-
-
-
-
-#for tinder matching
-# class MachedRoom(models.Model):
-#     id                  = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-#     protagonist         = models.ForeignKey(Profile, on_delete=models.CASCADE, verbose_name=_("main_person"),
-#                                related_name='top_person')
-#     contestant_left     = models.ForeignKey(Profile, on_delete=models.CASCADE, verbose_name=_("left"),
-#                                related_name='left_person')
-#     contestant_right    = models.ForeignKey(Profile, on_delete=models.CASCADE, verbose_name=_("right"),
-#                                related_name='right_person')
-
-#     max_votes           = models.PositiveIntegerField()
-#     votes_left          = models.PositiveIntegerField()
-#     votes_right         = models.PositiveIntegerField()
-#     dateCreated         = models.DateTimeField(auto_now_add=True)
-
-
-    
-#     @staticmethod
-#     def return_winner(self):
-#         if self.votes_left > votes_right:
-#             return Profile.objects.get(profile_id=self.contestant_left)
-#         else:
-#             return Profile.objects.get(profile_id=self.contestant_right)
-
-#     #return %

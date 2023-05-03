@@ -18,7 +18,8 @@ from django.http import JsonResponse
 from drf_yasg.utils import swagger_auto_schema
 from .helpers import matched_router
 from .filters import ProfileFilter
-
+from utils.orjson import ORJsonResponse
+from django.db.models import Q
 UserModel = get_user_model()
 
 class UserAPIView(APIView):
@@ -39,8 +40,10 @@ class UserAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
+
+
 class ProfileViewSet(viewsets.ModelViewSet):
-    permission_classes = [ProfilePermission]
+    #permission_classes = [ProfilePermission]
     serializer_class = ProfileSerializer
     pagination_class = ProfilePagination
     filterset_class  = ProfileFilter
@@ -48,13 +51,10 @@ class ProfileViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
 
         current_id = self.request.user.id
-        blocked_users = Blocked.objects.filter(user__id=current_id).values('blocked_user')
-
-        users_taken_action = UserSwipe.objects.filter(user__id=current_id).values('swiped_user')
-
-        users_not_taken_action = Profile.objects.exclude(user__in=users_taken_action) \
-            .exclude(user__in=blocked_users)#.exclude(user__id=current_id)
-
+        
+        users_not_taken_action = Profile.objects.filter(Q(user__current_user__isnull=True) & \
+        Q(user__blocked_user__isnull=True) & \
+        ~Q(user_id=current_id))
         
         return users_not_taken_action
 
@@ -68,8 +68,9 @@ class ProfileViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
 class MatchesViewSet(viewsets.ModelViewSet):
-    permission_classes = [DisplayMatchesPermission]
+    #permission_classes = [DisplayMatchesPermission]
     serializer_class = DisplayMatchedUsers
     
     def get_queryset(self):
@@ -107,9 +108,7 @@ class SwipeApi(APIView):
                     criterion2 = Q(user__id__contains = request.data['swiped_user'])
                     
                     get_swiped_user = UserSwipe.objects.filter(criterion1 & criterion2).first()
-                    
-                    #need to refactor this
-                
+                 
                     if get_swiped_user:
                         if matched_router(request.data):
                             if get_swiped_user.swipe == "like":

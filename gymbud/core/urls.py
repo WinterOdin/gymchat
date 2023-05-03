@@ -8,7 +8,7 @@ from django.conf.urls.static import static
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-
+import debug_toolbar
 
 from typing import List
 
@@ -38,8 +38,7 @@ urlpatterns = [
     path('chat/', TemplateView.as_view(template_name='base.html'), name='home'),
     path('locations/', include('locations.urls')),
     path('api/', include('user_mgmt.urls')),
-
-
+    path('__debug__/', include(debug_toolbar.urls))
 
 
 
