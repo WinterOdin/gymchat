@@ -32,7 +32,7 @@ from .permissions import DisplayMatchesPermission, MessagePermission
 from rest_framework.views import APIView
 
 class UsersListView(viewsets.ModelViewSet):
-    permission_classes = [DisplayMatchesPermission]
+    #permission_classes = [DisplayMatchesPermission]
     serializer_class = DisplayMatchedUsers
     
     def get_queryset(self):
@@ -42,7 +42,7 @@ class UsersListView(viewsets.ModelViewSet):
 
 class MessagesModelList(ListView):
 
-    permission_classes = [MessagePermission]
+    #permission_classes = [MessagePermission]
     http_method_names = ['get', ]
     paginate_by = getattr(settings, 'MESSAGES_PAGINATION', 500)
     
@@ -79,7 +79,7 @@ class MessagesModelList(ListView):
 
 class DialogsModelList(ListView):
 
-    permission_classes = [MessagePermission]
+    #permission_classes = [MessagePermission]
     http_method_names = ['get', ]
     paginate_by = getattr(settings, 'DIALOGS_PAGINATION', 20)
 
@@ -107,7 +107,7 @@ class DialogsModelList(ListView):
 
 class ChatSelfInfoView(APIView):
 
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
     def get(self, request, **response_kwargs):
         user = self.request.user
         

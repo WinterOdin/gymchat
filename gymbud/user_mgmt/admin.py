@@ -24,17 +24,14 @@ from django.forms import TextInput, Textarea
 class UserAdminConfig(UserAdmin):
     model = User
     search_fields = ('email', 'first_name',)
-    list_filter = ('email',  'first_name', 'is_active', 'is_staff')
+    list_filter = ('is_active', 'is_staff', 'current_location')
     ordering = ('-start_date',)
     list_display = ('id','email',  'first_name',
-                    'is_active', 'is_staff', 'password')
+                    'is_active', 'is_staff')
     fieldsets = (
-        (None, {'fields': ('email',  'first_name',)}),
+        (None, {'fields': ('email',  'first_name', 'current_location', 'search_range', 'age', 'birthday')}),
         ('Permissions', {'fields': ('is_staff', 'is_active')}),
     )
-    # formfield_overrides = {
-    #     Profile.bio: {'widget': Textarea(attrs={'rows': 10, 'cols': 40})},
-    # }
     add_fieldsets = (
         (None, {
             'classes': ('wide',),

@@ -32,6 +32,24 @@ class GymFactory(DjangoModelFactory):
     )
     place = factory.SubFactory(LocationFactory)
 
+class ProfileFactory(DjangoModelFactory):
+    
+    class Meta:
+        model = Profile
+    
+    gender = factory.Faker(
+        'random_element', elements=[x[0] for x in Profile.GENDER]
+    )
+    bio = factory.LazyAttribute(lambda o: FAKE.paragraph(nb_sentences=5, ext_word_list=['abc', 'def', 'ghi', 'jkl']))
+    playlist = factory.Faker(
+        'random_element', elements=[x for x in ['spotify', 'apple', 'tidal']]
+    )
+    gym = factory.RelatedFactory(
+        GymFactory,
+        factory_related_name = 'profile'
+    )
+
+
 class UserFactory(DjangoModelFactory):
 
     class Meta:
@@ -40,26 +58,18 @@ class UserFactory(DjangoModelFactory):
     email = factory.Faker('email')
     first_name = factory.Faker('first_name')
     birthday = factory.Faker('date_object')
-    age = factory.Faker('pyint', min_value=18, max_value=100)
     current_location = factory.SubFactory(LocationFactory)
+    age = factory.Faker('pyint', min_value=18, max_value=100)
     search_range = factory.Faker('pyint', min_value=10, max_value=150)
+    password = factory.LazyAttribute(lambda o: FAKE.password())
     is_staff = False
     is_active = True
 
+    profile = factory.RelatedFactory(
+        ProfileFactory,
+        factory_related_name = 'user'
+    )
 
-class ProfileFactory(DjangoModelFactory):
-    class Meta:
-        model = Profile
-    
-    user = factory.SubFactory(UserFactory)
-    gym = factory.SubFactory(GymFactory)
-    gender = factory.Faker(
-        'random_element', elements=[x[0] for x in Profile.GENDER]
-    )
-    bio = factory.LazyAttribute(lambda o: FAKE.paragraph(nb_sentences=5, ext_word_list=['abc', 'def', 'ghi', 'jkl']))
-    playlist = factory.Faker(
-        'random_element', elements=[x for x in ['spotify', 'apple', 'tidal']]
-    )
 
 def populate():
 

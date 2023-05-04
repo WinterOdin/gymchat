@@ -1,0 +1,46 @@
+version: "3.11.3"
+
+services:
+  pgdb:
+    image: kartoza/postgis
+    container_name: postgres_gym
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - static_files:/usr/share/nginx/html/static
+    ports:
+      - "80:80"
+  redis:
+    container_name: redis
+    image: redis:latest
+    restart: unless-stopped
+    ports:
+        - 6378:6379
+  gym_django:
+    build: .
+    volumes:
+      - .:/app/:/app/
+      - static_files:/app/staticfiles
+    ports:
+      - 8000:8000
+    env_file:
+      - .env
+    container_name: gymbud_cont
+    depends_on:
+      - pgdb
+    links:
+      - redis
+
+volumes:
+  postgres_data:
+  static_files:

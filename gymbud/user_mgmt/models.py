@@ -136,7 +136,7 @@ class Gym(models.Model):
     date        = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return str(f"{self.name}")
+        return str(f"{self.name} {self.place.city} {self.place.street}")
 
 class Exercise(models.Model):
 

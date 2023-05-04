@@ -40,8 +40,6 @@ class UserAPIView(APIView):
         return Response(serializer.errors, status=status.HTTP_422_UNPROCESSABLE_ENTITY)
 
 
-
-
 class ProfileViewSet(viewsets.ModelViewSet):
     #permission_classes = [ProfilePermission]
     serializer_class = ProfileSerializer
@@ -70,7 +68,7 @@ class ProfileViewSet(viewsets.ModelViewSet):
 
 
 class MatchesViewSet(viewsets.ModelViewSet):
-    #permission_classes = [DisplayMatchesPermission]
+    permission_classes = [DisplayMatchesPermission]
     serializer_class = DisplayMatchedUsers
     
     def get_queryset(self):

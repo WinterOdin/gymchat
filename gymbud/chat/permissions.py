@@ -10,7 +10,7 @@ class DisplayMatchesPermission(permissions.BasePermission):
         if view.action in ['list', 'retrive']:
             return request.user.is_authenticated 
         elif view.action in ['create', 'update', 'partial_update', 'destroy']:
-            return False
+            return request.user.is_staff
         else:
             return False
                                                                                                 
