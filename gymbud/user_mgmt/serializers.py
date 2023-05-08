@@ -53,10 +53,12 @@ class UserRangeSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+
+    location = LocationSerializer(read_only=True)
     class Meta:
         model = User
         exclude = ('password', 'is_superuser', 'is_staff', 'groups', 'user_permissions')
-
+        depth = 1
 
 class PhotoSerializer(serializers.ModelSerializer):
     class Meta:

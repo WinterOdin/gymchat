@@ -22,7 +22,8 @@ load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-4abx8th%)jfrf!glnvp(ndks$w=p=+y(02pz6q%v948bnb$^+_"
-DEBUG = int(os.environ.get('DEBUG', default=0))
+#DEBUG = int(os.environ.get('DEBUG', default=0))
+DEBUG = True
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS').split(' ')
 
 INTERNAL_IPS = [
@@ -138,11 +139,13 @@ AUTH_PASSWORD_VALIDATORS = [
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_FILTER_BACKENDS': (
         'django_filters.rest_framework.DjangoFilterBackend',
     ),
+    
     
 }
 
@@ -178,7 +181,7 @@ USE_TZ = True
 
 MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'frontend', 'static')

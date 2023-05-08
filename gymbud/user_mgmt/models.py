@@ -1,21 +1,45 @@
 import uuid
 from datetime import date
-from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.gis.geos import Point
 
- 
+from django.contrib.gis.db import models 
+from factory.faker import faker
+FAKE = faker.Faker()
+
+
 class Location(models.Model):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    city        = models.CharField(max_length=20)
-    street      = models.CharField(max_length=20)
-    state       = models.CharField(max_length=20)
-    country     = models.CharField(max_length=20)
+    city        = models.CharField(max_length=40, blank=True)
+    street      = models.CharField(max_length=40, blank=True)
+    state       = models.CharField(max_length=40, blank=True)
+    country     = models.CharField(max_length=100, blank=True)
     placeId     = models.CharField(max_length=100)
     latitude    = models.FloatField(blank=True, null=True)
     longitude   = models.FloatField(blank=True, null=True)
     dateCreated = models.DateTimeField(auto_now_add=True)
+    point       = models.PointField(srid=4326, blank=True, null=True)
+    test        = models.BooleanField(default=False, null=True)
+
+    #check if needed
+    def save(self, *args, **kwargs):
+        #remove if test data is not needed
+        if self.test:
+            geo_data = FAKE.local_latlng(country_code= 'US')
+            
+            self.longitude = geo_data[0]
+            self.city = geo_data[2]
+            self.latitude = geo_data[1]
+            self.country = geo_data[3]
+            self.state = geo_data[4]
+            #move this before if after tests
+            self.point = Point(float(self.longitude), float(self.latitude), srid=4326)
+        else:
+            self.point = Point(float(self.longitude), float(self.latitude), srid=4326)
+
+        super(Location, self).save(*args, **kwargs)
 
     def __str__(self):
         return str(f"{self.city} {self.street}")
@@ -98,7 +122,7 @@ class UserSwipe(models.Model):
     SwipeChoices = (
         ("like", "like"),
         ("dislike", "dislike"),
-    )
+    ) 
 
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name="current_user")
@@ -131,7 +155,7 @@ class NotMatches(models.Model):
 
 class Gym(models.Model):
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name        = models.CharField(max_length=20)
+    name        = models.CharField(max_length=40)
     place       = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, related_name="gym_location")
     date        = models.DateTimeField(auto_now_add=True)
 
@@ -141,8 +165,8 @@ class Gym(models.Model):
 class Exercise(models.Model):
 
     id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name        = models.CharField(max_length=40)
-    category    = models.CharField(max_length=20)
+    name        = models.CharField(max_length=70)
+    category    = models.CharField(max_length=50)
     authorized  = models.BooleanField(default=False)
     date        = models.DateTimeField(auto_now_add=True)
     
@@ -190,8 +214,8 @@ class Profile(models.Model):
     user            = models.OneToOneField(User, on_delete=models.CASCADE)
     gym             = models.OneToOneField(Gym, null=True, blank=True, on_delete=models.SET_NULL)
     gender          = models.CharField(max_length=10, choices=GENDER)
-    bio             = models.TextField(null=True, blank=True)
-    playlist        = models.CharField(max_length=25, null=True, blank=True)
+    bio             = models.TextField(max_length=155, null=True, blank=True)
+    playlist        = models.CharField(max_length=35, null=True, blank=True)
     date_created    = models.DateTimeField(auto_now_add=True)
     date_updated    = models.DateTimeField(auto_now=True)
 

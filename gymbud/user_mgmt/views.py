@@ -7,7 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractBaseUser
 from django.http import JsonResponse
 from django.views.generic import TemplateView, ListView
-from .models import Profile, User, UserSwipe, Matches, Blocked
+from .models import Profile, User, UserSwipe, Matches, Blocked, Location
 from .serializers import UserRangeSerializer, UserSerializer, ProfileSerializer, DisplayMatchedUsers, UserSwipeSerializer, RegisterUserSerializer, BlockedSerializer
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .permissions import ProfilePermission
@@ -20,6 +20,9 @@ from .helpers import matched_router
 from .filters import ProfileFilter
 from utils.orjson import ORJsonResponse
 from django.db.models import Q
+
+from django.contrib.gis.geos import Point
+from django.contrib.gis.measure import Distance  
 UserModel = get_user_model()
 
 class UserAPIView(APIView):
@@ -47,12 +50,23 @@ class ProfileViewSet(viewsets.ModelViewSet):
     filterset_class  = ProfileFilter
 
     def get_queryset(self):
-
+ 
         current_id = self.request.user.id
-        
-        users_not_taken_action = Profile.objects.filter(Q(user__current_user__isnull=True) & \
-        Q(user__blocked_user__isnull=True) & \
-        ~Q(user_id=current_id))
+
+        current_loc = self.request.user.current_location.point
+        range_number = self.request.user.search_range
+    
+        allowed_users = Profile.objects.filter(user__current_location__point__distance_lte=(current_loc, Distance(km=int(range_number))))
+
+    
+        blocked_users = Blocked.objects.filter(user__id=current_id).values('blocked_user')
+
+        users_taken_action = UserSwipe.objects.filter(user__id=current_id).values('swiped_user')
+
+        users_not_taken_action = allowed_users.exclude(user__in=users_taken_action) \
+            .exclude(user__in=blocked_users).exclude(user__id=current_id)
+
+
         
         return users_not_taken_action
 
