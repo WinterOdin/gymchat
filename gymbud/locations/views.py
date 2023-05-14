@@ -6,11 +6,13 @@ from user_mgmt.models import Gym, Location, Exercise
 from .permissions import GymLocationPermission
 from rest_framework.response import Response
 from .mixins import EnablePartialUpdateMixin
+from .filters import ExerciseFilter, GymFilter
 # Create your views here.
 
 class ExerciseViewSet(EnablePartialUpdateMixin, viewsets.ModelViewSet):
     serializer_class = ExerciseSerializer
     get_queryset = Exercise.objects.all()
+    filterset_class = ExerciseFilter
 
     def get_queryset(self):
         return Exercise.objects.all()
@@ -26,10 +28,12 @@ class ExerciseViewSet(EnablePartialUpdateMixin, viewsets.ModelViewSet):
     
 
 class LocationViewSet(EnablePartialUpdateMixin, viewsets.ModelViewSet):
-    permission_classes = [GymLocationPermission]
+    #permission_classes = [GymLocationPermission]
     serializer_class = LocationSerializer
-    get_queryset = Location.objects.all()
-    
+
+    def get_queryset(self):
+        return Location.objects.all()
+
     def create(self, request):
         serializer = LocationSerializer(data=request.data)
         if serializer.is_valid():
@@ -42,9 +46,12 @@ class LocationViewSet(EnablePartialUpdateMixin, viewsets.ModelViewSet):
 
 
 class GymViewSet(EnablePartialUpdateMixin, viewsets.ModelViewSet):
-    permission_classes = [GymLocationPermission]
+    #permission_classes = [GymLocationPermission]
     serializer_class = GymSerializer
-    get_queryset = Gym.objects.all()
+    filterset_class = GymFilter
+
+    def get_queryset(self):
+        return Gym.objects.all()
 
     def create(self, request):
         serializer = GymSerializer(data=request.data)

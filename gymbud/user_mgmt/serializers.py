@@ -72,12 +72,13 @@ class ExerciseSerializer(serializers.ModelSerializer):
         fields = ('name', 'category', 'authorized')
 
 
+
 class ProfileSerializer(WritableNestedModelSerializer, serializers.ModelSerializer):
     
     fav_exercise = serializers.SerializerMethodField(read_only=True)
     images = serializers.SerializerMethodField(read_only=True)
+    gym = serializers.SerializerMethodField(read_only=True)
     user = UserSerializer(read_only=True)
-    gym = GymSerializer(read_only=True)
     
 
     def get_images(self, obj):
@@ -91,6 +92,9 @@ class ProfileSerializer(WritableNestedModelSerializer, serializers.ModelSerializ
             "name": fav_exercise.name,
             "category": fav_exercise.category,
         }
+
+    def get_gym(self, obj):
+        return GymSerializer(Gym.objects.get(user=obj.user.id)).data
 
     class Meta:
         model = Profile

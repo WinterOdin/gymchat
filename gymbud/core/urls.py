@@ -36,7 +36,7 @@ urlpatterns = [
     re_path('admin/', admin.site.urls),
     path('com/', include('chat.urls', namespace='chat')),
     path('chat/', TemplateView.as_view(template_name='base.html'), name='home'),
-    path('locations/', include('locations.urls')),
+    #path('locations/', include('locations.urls')),
     path('api/', include('user_mgmt.urls')),
     path('__debug__/', include(debug_toolbar.urls)),
     path('api-auth/', include('rest_framework.urls')),

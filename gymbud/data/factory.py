@@ -10,27 +10,14 @@ import datetime
 FAKE = faker.Faker()
 
 class LocationFactory(DjangoModelFactory):
-
+    
     class Meta:
         model = Location
 
-    city = factory.LazyAttribute(lambda o: FAKE.city())
     street = factory.LazyAttribute(lambda o: FAKE.street_name())
-    state = factory.LazyAttribute(lambda o: FAKE.city_suffix())
-    country = factory.LazyAttribute(lambda o: FAKE.country())
     placeId = factory.LazyAttribute(lambda o: FAKE.pystr())
-    latitude = factory.LazyAttribute(lambda o: FAKE.latitude())
-    longitude = factory.LazyAttribute(lambda o: FAKE.longitude())
+    test = True
 
-class GymFactory(DjangoModelFactory):
-    
-    class Meta:
-        model = Gym
-    
-    name = factory.Faker(
-        'random_element', elements=[x for x in ['CityFit', 'JustGym', 'ZdroFit', 'Paco']]
-    )
-    place = factory.SubFactory(LocationFactory)
 
 class ProfileFactory(DjangoModelFactory):
     
@@ -43,10 +30,6 @@ class ProfileFactory(DjangoModelFactory):
     bio = factory.LazyAttribute(lambda o: FAKE.paragraph(nb_sentences=5, ext_word_list=['abc', 'def', 'ghi', 'jkl']))
     playlist = factory.Faker(
         'random_element', elements=[x for x in ['spotify', 'apple', 'tidal']]
-    )
-    gym = factory.RelatedFactory(
-        GymFactory,
-        factory_related_name = 'profile'
     )
 
 
@@ -69,6 +52,17 @@ class UserFactory(DjangoModelFactory):
         ProfileFactory,
         factory_related_name = 'user'
     )
+
+class MainFactory(DjangoModelFactory):
+    
+    class Meta:
+        model = Gym
+    
+    name = factory.Faker(
+        'random_element', elements=[x for x in ['CityFit', 'JustGym', 'ZdroFit', 'Paco']]
+    )
+    place = factory.SubFactory(LocationFactory)
+    user = factory.SubFactory(UserFactory)
 
 
 def populate():
@@ -111,4 +105,4 @@ def populate():
         print('That superuser already exists.')
     except Exception as e:
         print(e)
-    
+

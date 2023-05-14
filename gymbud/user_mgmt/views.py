@@ -44,7 +44,7 @@ class UserAPIView(APIView):
 
 
 class ProfileViewSet(viewsets.ModelViewSet):
-    #permission_classes = [ProfilePermission]
+    permission_classes = [ProfilePermission]
     serializer_class = ProfileSerializer
     pagination_class = ProfilePagination
     filterset_class  = ProfileFilter
@@ -52,22 +52,19 @@ class ProfileViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
  
         current_id = self.request.user.id
-
         current_loc = self.request.user.current_location.point
         range_number = self.request.user.search_range
     
-        allowed_users = Profile.objects.filter(user__current_location__point__distance_lte=(current_loc, Distance(km=int(range_number))))
-
     
-        blocked_users = Blocked.objects.filter(user__id=current_id).values('blocked_user')
+        allowed_users = Profile.objects.select_related('user').filter(user__current_location__point__distance_lte=(current_loc, Distance(km=int(range_number))))
 
-        users_taken_action = UserSwipe.objects.filter(user__id=current_id).values('swiped_user')
-
-        users_not_taken_action = allowed_users.exclude(user__in=users_taken_action) \
-            .exclude(user__in=blocked_users).exclude(user__id=current_id)
-
-
+        blocked = Blocked.objects.select_related('user').filter(user__id=current_id).values('blocked_user')
         
+        users_taken_action = UserSwipe.objects.select_related('user').filter(user__id=current_id).values('swiped_user')
+        
+        users_not_taken_action = allowed_users.exclude(user__in=users_taken_action) \
+            .exclude(user__in=blocked).exclude(user__id=current_id)
+
         return users_not_taken_action
 
     def create(self, request):
@@ -86,7 +83,7 @@ class MatchesViewSet(viewsets.ModelViewSet):
     serializer_class = DisplayMatchedUsers
     
     def get_queryset(self):
-        return Matches.objects.filter(user__id=self.request.user.id)
+        return Matches.objects.filter(user=self.request.user)
 
 
 
@@ -94,7 +91,8 @@ class BlockedViewSet(viewsets.ModelViewSet):
     serializer_class = BlockedSerializer
 
     def get_queryset(self):
-        return Blocked.objects.filter(user__id=self.request.user.id)
+        
+        return Blocked.objects.filter(user=self.request.user)
         
 
 

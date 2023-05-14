@@ -20,7 +20,7 @@ class GymSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Gym
-        fields = '__all__'
+        exclude = ('user', )
 
 
 class ExerciseSerializer(serializers.ModelSerializer):

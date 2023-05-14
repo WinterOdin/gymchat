@@ -11,7 +11,7 @@ FAKE = faker.Faker()
 
 
 class Location(models.Model):
-    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
     city        = models.CharField(max_length=40, blank=True)
     street      = models.CharField(max_length=40, blank=True)
     state       = models.CharField(max_length=40, blank=True)
@@ -88,11 +88,11 @@ class CustomAccountManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin):
     
-    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
     email       = models.EmailField(_('email address'), unique=True)
     first_name  = models.CharField(max_length=150, blank=True)
     birthday    = models.DateField(blank=True, null=True)
-    age         = models.PositiveIntegerField(blank=True, null=True)
+    age         = models.PositiveIntegerField(blank=True, null=True, db_index=True)
     current_location = models.ForeignKey(Location, on_delete=models.SET_NULL, related_name="location", null=True)
     search_range = models.PositiveSmallIntegerField(default=10, blank=True, null=True)
     start_date  = models.DateTimeField(default=timezone.now)
@@ -124,17 +124,17 @@ class UserSwipe(models.Model):
         ("dislike", "dislike"),
     ) 
 
-    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
     user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name="current_user")
     swiped_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="swiped_user")
     date        = models.DateTimeField(auto_now_add=True)
-    swipe       = models.CharField(max_length=20, default="like", choices=(SwipeChoices))
+    swipe       = models.CharField(max_length=20, default="like", choices=(SwipeChoices), db_index=True)
 
     def __str__(self):
         return str(f"{self.user} swiped {self.swiped_user} on {self.date}")
     
 class Matches(models.Model):
-    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
     user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name="match_first_user")
     matched_user= models.ForeignKey(User, on_delete=models.CASCADE, related_name="match_second_user")
     date        = models.DateTimeField(auto_now_add=True)
@@ -143,7 +143,7 @@ class Matches(models.Model):
         return str(f"{self.user} matched with {self.matched_user} on {self.date}")
     
 class NotMatches(models.Model):
-    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
     user        = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notmatch_first_user")
     matched_user= models.ForeignKey(User, on_delete=models.CASCADE, related_name="notmatch_second_user")
     date        = models.DateTimeField(auto_now_add=True)
@@ -152,21 +152,11 @@ class NotMatches(models.Model):
         return str(f"{self.user} not matched with {self.matched_user} on {self.date}")
     
 
-
-class Gym(models.Model):
-    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name        = models.CharField(max_length=40)
-    place       = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, related_name="gym_location")
-    date        = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return str(f"{self.name} {self.place.city} {self.place.street}")
-
 class Exercise(models.Model):
 
-    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
     name        = models.CharField(max_length=70)
-    category    = models.CharField(max_length=50)
+    category    = models.CharField(max_length=50, db_index=True)
     authorized  = models.BooleanField(default=False)
     date        = models.DateTimeField(auto_now_add=True)
     
@@ -210,10 +200,9 @@ class Profile(models.Model):
     ]
 
 
-    id              = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id              = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
     user            = models.OneToOneField(User, on_delete=models.CASCADE)
-    gym             = models.OneToOneField(Gym, null=True, blank=True, on_delete=models.SET_NULL)
-    gender          = models.CharField(max_length=10, choices=GENDER)
+    gender          = models.CharField(max_length=10, choices=GENDER, db_index=True)
     bio             = models.TextField(max_length=155, null=True, blank=True)
     playlist        = models.CharField(max_length=35, null=True, blank=True)
     date_created    = models.DateTimeField(auto_now_add=True)
@@ -232,3 +221,14 @@ class Blocked(models.Model):
     user         = models.ForeignKey(User, on_delete=models.CASCADE, related_name="user_thats_blocking")
     blocked_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="blocked_user")
     date_created = models.DateTimeField(auto_now_add=True)
+
+
+class Gym(models.Model):
+    id          = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, db_index=True)
+    name        = models.CharField(max_length=40)
+    place       = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True, related_name="gym_location")
+    user        = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    date        = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(f"{self.name} {self.place.city} {self.place.street}")
